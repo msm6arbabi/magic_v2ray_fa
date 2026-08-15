@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic V2Ray Control Board</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>Magic V2Ray</h1>
+                <div class="status-badge" id="service-status">Status: Checking...</div>
+            </div>
+            <div class="lang-switcher">
+                <select id="lang-select" onchange="changeLanguage(this.value)" style="padding: 4px 8px; border-radius: 4px; background: var(--bg-panel, #222); color: var(--text-main, #fff); border: 1px solid #444;">
+                    <option value="en">English</option>
+                    <option value="fa">فارسی</option>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="zh">简体中文</option>
+                    <option value="zh-tw">繁體中文</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="tabs-navigation">
+            <button class="tab-btn active" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', event)" data-i18n="tab_dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="tab-settings" onclick="switchTab('tab-settings', event)" data-i18n="tab_settings">Traffic Settings</button>
+            <button class="tab-btn" data-tab="tab-routing" onclick="switchTab('tab-routing', event)" data-i18n="tab_routing">Routing Settings</button>
+            <button class="tab-btn" data-tab="tab-log" onclick="switchTab('tab-log', event)" data-i18n="tab_log">Xray Log</button>
+            <button class="tab-btn" data-tab="tab-latency" onclick="switchTab('tab-latency', event)" data-i18n="tab_latency">Network Latency</button>
+        </div>
+
+        <div id="tab-dashboard" class="tab-content active">
+            <section class="control-actions">
+                <button class="btn btn-start" onclick="toggleService('start')" data-i18n="btn_start">Start Engine</button>
+                <button class="btn btn-stop" onclick="toggleService('stop')" data-i18n="btn_stop">Stop Engine</button>
+            </section>
+
+            <section class="import-section">
+                <h3 data-i18n="import_title">Import Configuration Profile</h3>
+                <textarea id="import-input" data-i18n-placeholder="import_placeholder" placeholder="Paste Sub Link (https://...) or Manual String (vless://, vmess://, trojan://) here..."></textarea>
+                <div class="import-btn-row">
+                    <button class="btn btn-primary btn-import-main" onclick="processImport()" data-i18n="btn_import">Process Connection Link</button>
+                    <div class="import-add-menu-container">
+                        <button class="btn btn-add-node" onclick="toggleImportAddMenu(event)" title="More import options">+</button>
+                        <div id="import-add-dropdown" class="import-add-dropdown">
+                            <!-- Hide these button for now as it's not working on KSU Webui currently
+                            <button onclick="importFromClipboard(); closeImportAddMenu();" data-i18n="import_from_clipboard">Import from Clipboard</button>
+                            <button onclick="importFromFile(); closeImportAddMenu();" data-i18n="import_from_file">Import from File</button>
+                            <div class="import-add-divider"></div>-->
+                            <button onclick="openProxyChainModal(); closeImportAddMenu();" data-i18n="add_proxy_chain">Add Proxy Chain</button>
+                            <div class="import-add-divider"></div>
+                            <button onclick="openNewNodeModal('vmess'); closeImportAddMenu();" data-i18n="add_vmess">Add VMess</button>
+                            <button onclick="openNewNodeModal('vless'); closeImportAddMenu();" data-i18n="add_vless">Add VLESS</button>
+                            <button onclick="openNewNodeModal('trojan'); closeImportAddMenu();" data-i18n="add_trojan">Add Trojan</button>
+                            <button onclick="openNewNodeModal('shadowsocks'); closeImportAddMenu();" data-i18n="add_shadowsocks">Add Shadowsocks</button>
+                            <button onclick="openNewNodeModal('wireguard'); closeImportAddMenu();" data-i18n="add_wireguard">Add WireGuard</button>
+                            <button onclick="openNewNodeModal('hysteria2'); closeImportAddMenu();" data-i18n="add_hysteria2">Add Hysteria2</button>
+                            <button onclick="openNewNodeModal('socks'); closeImportAddMenu();" data-i18n="add_socks">Add SOCKS</button>
+                            <button onclick="openNewNodeModal('http'); closeImportAddMenu();" data-i18n="add_http">Add HTTP Proxy</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="import-file-input" accept=".txt,.conf,.json" style="display:none;" onchange="handleFileImport(event)">
+            </section>
+
+            <section class="profiles-section">
+                <h3 data-i18n="categories_title">Connection Categories</h3>
+                <div id="profiles-container"></div>
+            </section>
+        </div>
+
+        <div id="tab-settings" class="tab-content">
+            <section class="settings-form-panel">
+                <h3 data-i18n="adv_settings_title">Advanced Engine Settings</h3>
+                
+                <div class="settings-group-box">
+                    <h4 data-i18n="group_routing">Routing & Core Protocol</h4>
+                    
+                    <div class="setting-item-row">
+                        <label data-i18n="lbl_loglevel">Level Logging</label>
+                        <select id="set-loglevel">
+                            <option value="none">None</option>
+                            <option value="debug">Debug</option>
+                            <option value="info">Info</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-sniffing"><span data-i18n="lbl_sniffing">Enable Sniffing</span><small data-i18n="desc_sniffing">Sniff domains from packet stream</small></label>
+                        <input type="checkbox" id="set-sniffing">
+                    </div>
+
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-routeonly"><span data-i18n="lbl_routeonly">Enable RouteOnly</span><small data-i18n="desc_routeonly">Only sniff for route filtering</small></label>
+                        <input type="checkbox" id="set-routeonly">
+                    </div>
+
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-enableipv6"><span data-i18n="lbl_enableipv6">Enable IPv6</span><small data-i18n="desc_enableipv6">Allow IPv6 network connectivity</small></label>
+                        <input type="checkbox" id="set-enableipv6">
+                    </div>
+
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-preferipv6"><span data-i18n="lbl_preferipv6">Prefer IPv6</span><small data-i18n="desc_preferipv6">Prioritize IPv6 address routes</small></label>
+                        <input type="checkbox" id="set-preferipv6">
+                    </div>
+
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-dnsviaproxy"><span data-i18n="lbl_dnsviaproxy">Resolve DNS via Proxy</span><small data-i18n="desc_dnsviaproxy">Wrap and route all DNS resolver via Server</small></label>
+                        <input type="checkbox" id="set-dnsviaproxy">
+                    </div>
+
+                    <div class="setting-item-row">
+                        <label><span data-i18n="lbl_pinned_cert">Pinned Peer Cert SHA256</span><small data-i18n="desc_pinned_cert">Pin the SHA256 hash of the server certificate.</small></label>
+                        <input type="text" id="set-pinned-cert" placeholder="">
+                    </div>
+                </div>
+
+                <div class="settings-group-box">
+                    <div class="setting-item-row toggle-row">
+                        <h4 data-i18n="group_mux">Multiplexing (MUX)</h4>
+                        <input type="checkbox" id="set-mux" onchange="toggleSubSettingField('set-mux', 'mux-sub-fields')">
+                    </div>
+                    <div id="mux-sub-fields" class="sub-setting-panel">
+                        <div class="setting-item-row">
+                            <label data-i18n="lbl_mux_concurrency">Max Concurrency Connections</label>
+                            <input type="number" id="set-mux-connections" min="1" max="1024" value="8">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group-box">
+                    <div class="setting-item-row toggle-row">
+                        <h4 data-i18n="group_fragment">Firewall Fragment (Anti-DPI)</h4>
+                        <input type="checkbox" id="set-fragment" onchange="toggleSubSettingField('set-fragment', 'fragment-sub-fields')">
+                    </div>
+                    <div id="fragment-sub-fields" class="sub-setting-panel">
+                        <div class="setting-item-row">
+                            <label data-i18n="lbl_frag_packets">Fragment Packets Target</label>
+                            <select id="set-fragment-packets">
+                                <option value="tlshello">tlshello</option>
+                            </select>
+                        </div>
+                        <div class="setting-item-row">
+                            <label data-i18n="lbl_frag_length">Fragment Length (min-max)</label>
+                            <input type="text" id="set-fragment-length" placeholder="50-100">
+                        </div>
+                        <div class="setting-item-row">
+                            <label data-i18n="lbl_frag_interval">Fragment Interval (min-max)</label>
+                            <input type="text" id="set-fragment-interval" placeholder="10-20">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group-box">
+                    <h4 data-i18n="group_network">Network Interfaces</h4>
+                    <div class="setting-item-row">
+                        <label><span data-i18n="lbl_networkmode">Apply Proxy On</span><small data-i18n="desc_networkmode">Restrict which network interfaces are routed through the proxy</small></label>
+                        <select id="set-networkmode">
+                            <option value="0" data-i18n="network_mode_all">All Networks</option>
+                            <option value="1" data-i18n="network_mode_wifi">WiFi / Ethernet Only</option>
+                            <option value="2" data-i18n="network_mode_mobile">Mobile Data Only</option>
+                        </select>
+                    </div>
+                    <div class="setting-item-row">
+                        <label data-i18n="lbl_mtu">Maximum Transmission Unit (MTU)</label>
+                        <input type="number" id="set-mtu" value="1350">
+                    </div>
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-allowtether"><span data-i18n="lbl_allowtether">Allow Tether from Proxy</span><small data-i18n="desc_allowtether">Route tethered/hotspot clients through the proxy. Disable to let them bypass the proxy and use the direct connection.</small></label>
+                        <input type="checkbox" id="set-allowtether" checked>
+                    </div>
+                </div>
+
+                <div class="settings-group-box">
+                    <div class="setting-item-row toggle-row">
+                        <h4 style="margin:0;" data-i18n="group_dns">DNS Configuration</h4>
+                        <input type="checkbox" id="set-localdns" onchange="updateDnsGroupVisibility()">
+                    </div>
+                    <div id="dns-sub-fields" class="sub-setting-panel" style="display:none;">
+
+                        <div class="setting-item-row toggle-row" id="dns-row-fakedns-local">
+                            <label for="set-fakedns-local"><span data-i18n="lbl_fakedns_local">Enable Fake DNS</span><small data-i18n="desc_fakedns_local">Use 198.18.0.0/15 pool to map domains to virtual IPs instantly</small></label>
+                            <input type="checkbox" id="set-fakedns-local" onchange="updateDnsGroupVisibility()">
+                        </div>
+
+                        <div class="setting-item-row" id="dns-row-vpndns">
+                            <label for="set-vpndns"><span data-i18n="lbl_vpndns">VPN DNS (IPv4/IPv6)</span><small data-i18n="desc_vpndns">DNS used inside the tunnel — disabled when Fake DNS is active</small></label>
+                            <input type="text" id="set-vpndns" placeholder="1.1.1.1" value="1.1.1.1">
+                        </div>
+
+                        <div class="setting-item-row" id="dns-row-foreign">
+                            <label for="set-foreign-dns"><span data-i18n="lbl_foreign_dns">Foreign DNS (Optional)</span><small data-i18n="desc_foreign_dns">Resolver for non-domestic domains</small></label>
+                            <input type="text" id="set-foreign-dns" placeholder="1.1.1.1" value="1.1.1.1">
+                        </div>
+
+                        <div class="setting-item-row" id="dns-row-domestic">
+                            <label for="set-domestic-dns"><span data-i18n="lbl_domestic_dns">Domestic DNS (Optional)</span><small data-i18n="desc_domestic_dns">Resolver for domestic/local domains</small></label>
+                            <input type="text" id="set-domestic-dns" placeholder="223.5.5.5" value="223.5.5.5">
+                        </div>
+
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-save-settings" onclick="saveAdvancedSettingsForm()" data-i18n="btn_save_settings">Save & Apply Configurations</button>
+            </section>
+        </div>
+
+        <!-- ===== Routing Settings Tab ===== -->
+        <div id="tab-routing" class="tab-content">
+            <section class="routing-panel">
+                <div class="routing-panel-header">
+                    <h3 data-i18n="routing_title">Routing Settings</h3>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <button class="btn-add-node" onclick="openAddRoutingRuleModal()" title="Add rule">+</button>
+                        <div class="category-menu-container">
+                            <button class="btn-menu-trigger" onclick="toggleCategoryMenu(event, this)">⋮</button>
+                            <div class="category-dropdown-menu">
+                                <button onclick="openImportRoutingModal(); closeAllMenus();" data-i18n="menu_import_presets">Import presets from JSON</button>
+                                <button onclick="exportRoutingRulesToClipboard(); closeAllMenus();" data-i18n="menu_export_presets">Export presets JSON to clipboard</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="routing-rules-container"></div>
+                <div id="routing-empty-state" class="routing-empty-state" style="display:none;">
+                    <span data-i18n="routing_empty">No custom routing rules yet.<br>Tap + to add a domain or IP rule.</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== Log Tab ===== -->
+        <div id="tab-log" class="tab-content">
+            <section class="log-panel">
+                <div class="log-toolbar">
+                    <div class="log-toolbar-left">
+                        <span class="log-status-dot" id="log-status-dot"></span>
+                        <span class="log-line-count" id="log-line-count">— lines</span>
+                    </div>
+                    <div class="log-toolbar-right">
+                        <button class="log-tool-btn" id="btn-log-tail" onclick="toggleLogTail()" title="Auto-scroll" data-active="true">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+                        </button>
+                        <button class="log-tool-btn" onclick="copyLogToClipboard()" title="Copy log">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                        <button class="log-tool-btn log-tool-btn--refresh" id="btn-log-refresh" onclick="refreshLog()" title="Refresh">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        </button>
+                        <button class="log-tool-btn log-tool-btn--clear" onclick="clearLogView()" title="Clear view">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="log-filter-bar">
+                    <button class="log-filter-chip active" data-level="all" onclick="setLogFilter('all')" data-i18n="log_filter_all">All</button>
+                    <button class="log-filter-chip" data-level="debug" onclick="setLogFilter('debug')">Debug</button>
+                    <button class="log-filter-chip" data-level="info" onclick="setLogFilter('info')">Info</button>
+                    <button class="log-filter-chip" data-level="warning" onclick="setLogFilter('warning')">Warn</button>
+                    <button class="log-filter-chip" data-level="error" onclick="setLogFilter('error')">Error</button>
+                </div>
+
+                <div class="log-output" id="log-output">
+                    <div class="log-empty-state" id="log-empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--md-outline)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        <span data-i18n="log_empty">No log entries yet.<br>Start Xray engine to generate logs.</span>
+                    </div>
+                </div>
+
+                <div class="log-autorefresh-bar">
+                    <label class="log-autorefresh-label">
+                        <input type="checkbox" id="log-autorefresh-toggle" onchange="toggleLogAutoRefresh()">
+                        <span data-i18n="log_autorefresh">Auto-refresh</span>
+                    </label>
+                    <select id="log-autorefresh-interval" onchange="updateLogRefreshInterval()" class="log-interval-select">
+                        <option value="2000">2s</option>
+                        <option value="5000" selected>5s</option>
+                        <option value="10000">10s</option>
+                        <option value="30000">30s</option>
+                    </select>
+                    <span class="log-tail-label" data-i18n="log_tail_lines">Tail lines:</span>
+                    <select id="log-tail-lines" onchange="refreshLog()" class="log-interval-select">
+                        <option value="100">100</option>
+                        <option value="200" selected>200</option>
+                        <option value="500">500</option>
+                        <option value="1000">1000</option>
+                    </select>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== Network Latency Monitor Tab ===== -->
+        <div id="tab-latency" class="tab-content">
+            <section class="latency-panel">
+                <div class="latency-toolbar">
+                    <div class="latency-toolbar-left">
+                        <span class="latency-status-dot" id="latency-status-dot"></span>
+                        <span class="latency-current-value" id="latency-current-value">— ms</span>
+                    </div>
+                    <label class="log-autorefresh-label latency-enable-label">
+                        <input type="checkbox" id="latency-monitor-toggle" onchange="toggleLatencyMonitor()">
+                        <span data-i18n="latency_enable_monitor">Enable monitor</span>
+                    </label>
+                </div>
+
+                <div class="latency-network-info" id="latency-network-info">
+                    <div class="latency-network-item">
+                        <span class="latency-network-label" data-i18n="latency_net_iface">Interface</span>
+                        <span class="latency-network-value" id="latency-iface-value">—</span>
+                    </div>
+                    <div class="latency-network-item">
+                        <span class="latency-network-label" data-i18n="latency_net_ipv4">IPv4</span>
+                        <span class="latency-network-value" id="latency-ipv4-value">—</span>
+                    </div>
+                    <div class="latency-network-item">
+                        <span class="latency-network-label" data-i18n="latency_net_ipv6">IPv6</span>
+                        <span class="latency-network-value" id="latency-ipv6-value">—</span>
+                    </div>
+                </div>
+
+                <div class="ip-hunter-panel" id="ip-hunter-panel">
+                    <div class="latency-toolbar">
+                        <div class="latency-toolbar-left">
+                            <span class="ip-hunter-title" data-i18n="ip_hunter_title">Mobile IP Hunter</span>
+                        </div>
+                        <label class="log-autorefresh-label latency-enable-label">
+                            <input type="checkbox" id="ip-hunter-toggle" onchange="toggleIpHunter()">
+                            <span data-i18n="ip_hunter_enable">Enable IP hunter</span>
+                        </label>
+                    </div>
+                    <div class="ip-hunter-input-row">
+                        <input type="text" id="ip-hunter-prefixes" class="ip-hunter-input"
+                               placeholder="10.120;10.121;10.122" data-i18n-placeholder="ip_hunter_placeholder"
+                               oninput="onIpHunterInputChange()">
+                    </div>
+                    <div class="ip-hunter-hint" data-i18n="ip_hunter_hint">Enter IPv4 network prefixes separated by semicolons (;), e.g. 10.120;10.121;10.122</div>
+                </div>
+
+                <div class="latency-stats-row">
+                    <div class="latency-stat">
+                        <span class="latency-stat-label" data-i18n="latency_stat_avg">Avg</span>
+                        <span class="latency-stat-value" id="latency-stat-avg">—</span>
+                    </div>
+                    <div class="latency-stat">
+                        <span class="latency-stat-label" data-i18n="latency_stat_min">Min</span>
+                        <span class="latency-stat-value" id="latency-stat-min">—</span>
+                    </div>
+                    <div class="latency-stat">
+                        <span class="latency-stat-label" data-i18n="latency_stat_max">Max</span>
+                        <span class="latency-stat-value" id="latency-stat-max">—</span>
+                    </div>
+                    <div class="latency-stat">
+                        <span class="latency-stat-label" data-i18n="latency_stat_loss">Loss</span>
+                        <span class="latency-stat-value" id="latency-stat-loss">—</span>
+                    </div>
+                </div>
+
+                <div class="latency-chart-wrap" id="latency-chart-wrap">
+                    <svg id="latency-chart-svg" viewBox="0 0 600 200" preserveAspectRatio="none"></svg>
+                    <div class="latency-empty-state" id="latency-empty-state">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--md-outline)"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-2.8-2.8L3 18"/></svg>
+                        <span data-i18n="latency_empty">Enable monitor to start measuring network latency.</span>
+                    </div>
+                </div>
+
+                <div class="latency-legend">
+                    <span class="latency-legend-item"><i class="latency-dot latency-dot--green"></i><span data-i18n="latency_legend_ok">Response time (ms)</span></span>
+                    <span class="latency-legend-item"><i class="latency-dot latency-dot--red"></i><span data-i18n="latency_legend_timeout">Timeout / no connection</span></span>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="helper.js"></script>
+    <script src="i18n.js"></script>
+    <script src="vars.js"></script>
+    <script src="main.js"></script>
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Confirm Modal (KSU webui does not support window.confirm()) -->
+    <div id="confirm-modal-overlay" class="modal-overlay confirm-overlay" style="display: none;">
+        <div class="modal-window confirm-window">
+            <div class="modal-body confirm-body">
+                <p id="confirm-modal-message"></p>
+            </div>
+            <div class="confirm-actions">
+                <button id="confirm-modal-cancel" class="btn btn-confirm-cancel" data-i18n="confirm_cancel">Cancel</button>
+                <button id="confirm-modal-ok" class="btn btn-confirm-ok" data-i18n="confirm_ok">OK</button>
+            </div>
+        </div>
+    </div>
+    <div id="edit-node-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <header class="modal-header">
+                <button class="modal-icon-btn" onclick="closeEditNodeModal()">←</button>
+                <h2 id="modal-edit-title-text" data-i18n="modal_edit_title">Config settings</h2>
+                <button class="modal-icon-btn check-btn" onclick="saveEditedNode()">✓</button>
+            </header>
+            <div class="modal-body">
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_remarks">Remarks</label>
+                    <input type="text" id="edit-remarks">
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_address">Address</label>
+                    <input type="text" id="edit-address">
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_port">Port</label>
+                    <input type="number" id="edit-port">
+                </div>
+                <div class="edit-item-field" id="field-group-uuid">
+                    <label data-i18n="lbl_id">ID / Password</label>
+                    <input type="text" id="edit-uuid">
+                </div>
+                <div id="subfields-vmess" class="conditional-fields">
+                    <div class="edit-item-field" id="field-group-alterid">
+                        <label data-i18n="lbl_alterid">Alter ID</label>
+                        <input type="number" id="edit-alterid" min="0" placeholder="0">
+                    </div>
+                </div>
+                <div class="edit-item-field" id="field-group-encryption">
+                    <label data-i18n="lbl_encryption">Encryption</label>
+                    <select id="edit-encryption">
+                        <option value="auto">auto</option>
+                        <option value="none">none</option>
+                        <option value="zero">zero</option>
+                        <option value="aes-128-gcm">aes-128-gcm</option>
+                        <option value="chacha20-poly1305">chacha20-poly1305</option>
+                    </select>
+                </div>
+                <div class="edit-item-field" id="field-group-flow">
+                    <label data-i18n="lbl_flow">Flow</label>
+                    <select id="edit-flow">
+                        <option value="">none</option>
+                        <option value="xtls-rprx-vision">xtls-rprx-vision</option>
+                        <option value="xtls-rprx-vision-udp443">xtls-rprx-vision-udp443</option>
+                    </select>
+                </div>
+
+                <!-- Shadowsocks encryption method -->
+                <div class="edit-item-field" id="field-group-ss-method" style="display:none;">
+                    <label data-i18n="lbl_ss_method">Encryption Method</label>
+                    <select id="edit-ss-method">
+                        <option value="aes-256-gcm">aes-256-gcm</option>
+                        <option value="aes-128-gcm">aes-128-gcm</option>
+                        <option value="chacha20-poly1305">chacha20-poly1305</option>
+                        <option value="xchacha20-poly1305">xchacha20-poly1305</option>
+                        <option value="2022-blake3-aes-128-gcm">2022-blake3-aes-128-gcm</option>
+                        <option value="2022-blake3-aes-256-gcm">2022-blake3-aes-256-gcm</option>
+                        <option value="2022-blake3-chacha20-poly1305">2022-blake3-chacha20-poly1305</option>
+                        <option value="none">none</option>
+                        <option value="plain">plain</option>
+                    </select>
+                </div>
+
+                <!-- WireGuard-specific fields -->
+                <div id="subfields-wireguard" class="conditional-fields" style="display:none;">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_wg_secret_key">Secret Key (Private Key)</label>
+                        <input type="text" id="edit-wg-secret-key" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_wg_public_key">Server Public Key</label>
+                        <input type="text" id="edit-wg-public-key" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_wg_preshared_key">Pre-Shared Key (optional)</label>
+                        <input type="text" id="edit-wg-preshared-key" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_wg_reserved">Reserved (optional)</label>
+                        <input type="text" id="edit-wg-reserved" placeholder="0,0,0">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_wg_local_address">Local Address</label>
+                        <input type="text" id="edit-wg-local-address" placeholder="172.16.0.2/32">
+                    </div>
+                    <div class="edit-item-field">
+                        <label>MTU</label>
+                        <input type="number" id="edit-wg-mtu" placeholder="1420" min="576" max="1500">
+                    </div>
+                </div>
+
+                <!-- Hysteria2-specific fields -->
+                <div id="subfields-hysteria2" class="conditional-fields" style="display:none;">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_hy2_obfs_password">Obfs Password (optional)</label>
+                        <input type="text" id="edit-hy2-obfs-password" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_hy2_port_hopping">Port Hopping Range</label>
+                        <input type="text" id="edit-hy2-port-hopping" placeholder="e.g. 20000-30000">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_hy2_hop_interval">Hop Interval (seconds)</label>
+                        <input type="number" id="edit-hy2-hop-interval" placeholder="30" min="1">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_hy2_bandwidth_down">Bandwidth Down</label>
+                        <input type="text" id="edit-hy2-bandwidth-down" placeholder="100m">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_hy2_bandwidth_up">Bandwidth Up</label>
+                        <input type="text" id="edit-hy2-bandwidth-up" placeholder="20m">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_hy2_tls">TLS (SNI)</label>
+                        <input type="text" id="edit-hy2-sni" placeholder="example.com">
+                    </div>
+                </div>
+
+                <!-- SOCKS / HTTP proxy auth fields -->
+                <div id="subfields-proxy-auth" class="conditional-fields" style="display:none;">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_proxy_username">Username (optional)</label>
+                        <input type="text" id="edit-proxy-username" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_proxy_password">Password (optional)</label>
+                        <input type="text" id="edit-proxy-password" placeholder="">
+                    </div>
+                </div>
+
+                <!-- TRANSPORT section (vmess/vless/trojan/shadowsocks; hidden for WG / Hysteria2 / SOCKS / HTTP) -->
+                <div id="section-transport-wrapper">
+                <div class="modal-section-divider" data-i18n="categories_title">TRANSPORT</div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_transport_net">Network</label>
+                    <select id="edit-network" onchange="updateEditFormVisibility()">
+                        <option value="tcp">tcp</option>
+                        <option value="kcp">kcp</option>
+                        <option value="ws">ws</option>
+                        <option value="httpupgrade">httpupgrade</option>
+                        <option value="xhttp">xhttp</option>
+                        <option value="h2">h2</option>
+                        <option value="grpc">grpc</option>
+                    </select>
+                </div>
+
+                <!-- TCP: Header Type -->
+                <div class="edit-item-field" id="field-group-header-type">
+                    <label data-i18n="lbl_header_type">Header Type</label>
+                    <select id="edit-header-type" onchange="updateEditFormVisibility()">
+                        <option value="none">none</option>
+                        <option value="http">http</option>
+                    </select>
+                </div>
+                <!-- TCP: HTTP Host (shown when header-type=http) -->
+                <div id="subfields-tcp-http" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_tcp_http_host">HTTP Host</label>
+                        <input type="text" id="edit-tcp-http-host" placeholder="example.com">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_tcp_http_path">HTTP Path</label>
+                        <input type="text" id="edit-tcp-http-path" placeholder="/">
+                    </div>
+                </div>
+
+                <!-- KCP subfields -->
+                <div id="subfields-kcp" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_kcp_header">Header Type</label>
+                        <select id="edit-kcp-header">
+                            <option value="none">none</option>
+                            <option value="srtp">srtp</option>
+                            <option value="utp">utp</option>
+                            <option value="wechat-video">wechat-video</option>
+                            <option value="dtls">dtls</option>
+                            <option value="wireguard">wireguard</option>
+                            <option value="dns">dns</option>
+                        </select>
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_kcp_host">Host</label>
+                        <input type="text" id="edit-kcp-host" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_kcp_seed">KCP Seed</label>
+                        <input type="text" id="edit-kcp-seed" placeholder="">
+                    </div>
+                </div>
+
+                <!-- WS subfields -->
+                <div id="subfields-ws" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_ws_path">WebSocket Path</label>
+                        <input type="text" id="edit-ws-path" placeholder="/">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_ws_host">WebSocket Host</label>
+                        <input type="text" id="edit-ws-host">
+                    </div>
+                </div>
+
+                <!-- HTTPUpgrade subfields -->
+                <div id="subfields-httpupgrade" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_httpupgrade_host">HTTPUpgrade Host</label>
+                        <input type="text" id="edit-httpupgrade-host" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_httpupgrade_path">HTTPUpgrade Path</label>
+                        <input type="text" id="edit-httpupgrade-path" placeholder="/">
+                    </div>
+                </div>
+
+                <!-- XHTTP subfields -->
+                <div id="subfields-xhttp" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_xhttp_mode">XHTTP Mode</label>
+                        <select id="edit-xhttp-mode">
+                            <option value="auto">auto</option>
+                            <option value="packet-up">packet-up</option>
+                            <option value="stream-up">stream-up</option>
+                            <option value="stream-one">stream-one</option>
+                        </select>
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_xhttp_host">XHTTP Host</label>
+                        <input type="text" id="edit-xhttp-host" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_xhttp_path">XHTTP Path</label>
+                        <input type="text" id="edit-xhttp-path" placeholder="/">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_xhttp_extra">XHTTP Extra</label>
+                        <textarea id="edit-xhttp-extra" rows="3" placeholder='{"noGRPCHeader":false}'></textarea>
+                    </div>
+                </div>
+
+                <!-- H2 subfields -->
+                <div id="subfields-h2" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_h2_host">H2 Host</label>
+                        <input type="text" id="edit-h2-host" placeholder="">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_h2_path">H2 Path</label>
+                        <input type="text" id="edit-h2-path" placeholder="/">
+                    </div>
+                </div>
+
+                <!-- gRPC subfields -->
+                <div id="subfields-grpc" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_grpc_mode">gRPC mode</label>
+                        <select id="edit-grpc-mode">
+                            <option value="gun">gun</option>
+                            <option value="multi">multi</option>
+                        </select>
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_grpc_auth">gRPC Authority</label>
+                        <input type="text" id="edit-grpc-auth">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_grpc_service">gRPC serviceName</label>
+                        <input type="text" id="edit-grpc-service">
+                    </div>
+                </div>
+
+                </div><!-- end section-transport-wrapper -->
+
+                <!-- SECURITY section (vmess/vless/trojan/shadowsocks; hidden for WireGuard / SOCKS / HTTP / Hysteria2) -->
+                <div id="section-security-wrapper">
+                <div class="modal-section-divider" data-i18n="lbl_tls">SECURITY</div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_tls">TLS</label>
+                    <select id="edit-security" onchange="updateEditFormVisibility()">
+                        <option value="none">none</option>
+                        <option value="tls">tls</option>
+                        <option value="reality">reality</option>
+                    </select>
+                </div>
+
+                <div id="subfields-tls" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_sni">SNI</label>
+                        <input type="text" id="edit-sni">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_fingerprint">Fingerprint</label>
+                        <select id="edit-fingerprint">
+                            <option value="chrome">chrome</option>
+                            <option value="firefox">firefox</option>
+                            <option value="safari">safari</option>
+                            <option value="edge">edge</option>
+                            <option value="qq">qq</option>
+                            <option value="random">random</option>
+                        </select>
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_alpn">ALPN</label>
+                        <input type="text" id="edit-alpn" placeholder="h2,http/1.1">
+                    </div>
+                </div>
+
+                <div id="subfields-tls-only" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <div class="setting-item-row toggle-row setting-row-removed">
+                            <label data-i18n="lbl_allowinsecure" class="label-strike">Allow Insecure</label>
+                            <input type="checkbox" id="edit-allowinsecure" disabled>
+                        </div>
+                        <div class="warning-text-danger" data-i18n="warn_allowinsecure_removed">This option has been removed by Xray-core and can no longer be used. It will never be written into the config.</div>
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_pcs">Pinned Cert SHA256</label>
+                        <input type="text" id="edit-pcs" placeholder="base64 or hex sha256">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_ech">ECH Config List</label>
+                        <input type="text" id="edit-ech" placeholder="base64 echConfigList">
+                    </div>
+                </div>
+
+                <div id="subfields-reality" class="conditional-fields">
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_pbk">Public Key</label>
+                        <input type="text" id="edit-pbk">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_sid">Short ID</label>
+                        <input type="text" id="edit-sid">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_spx">SpiderX</label>
+                        <input type="text" id="edit-spx" placeholder="/">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_pqv">Post-Quantum Verify (pqv)</label>
+                        <input type="text" id="edit-pqv" placeholder="mldsa65Verify">
+                    </div>
+                </div>
+                </div><!-- end section-security-wrapper -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Proxy Chain Modal -->
+    <div id="proxy-chain-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <header class="modal-header">
+                <button class="modal-icon-btn" onclick="closeProxyChainModal()">←</button>
+                <h2 data-i18n="modal_proxy_chain_title">Add Proxy Chain</h2>
+                <button class="modal-icon-btn check-btn" onclick="saveProxyChain()">✓</button>
+            </header>
+            <div class="modal-body" style="padding: 16px; display: flex; flex-direction: column; gap: 18px;">
+                <div class="chain-info-box" data-i18n="proxy_chain_desc">
+                    Traffic flows: Client → Hop 1 → Hop 2 → Internet.<br>
+                    Hop 2's traffic is tunneled inside Hop 1.
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_chain_name">Chain Name</label>
+                    <input type="text" id="chain-name" placeholder="My Proxy Chain">
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_hop1">Hop 1 (Outer / Entry)</label>
+                    <select id="chain-hop1">
+                        <option value="" data-i18n="chain_select_node">— Select a node —</option>
+                    </select>
+                </div>
+                <div class="chain-arrow">↓</div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_hop2">Hop 2 (Inner / Exit)</label>
+                    <select id="chain-hop2">
+                        <option value="" data-i18n="chain_select_node">— Select a node —</option>
+                    </select>
+                </div>
+                <div class="chain-arrow">↓</div>
+                <div class="chain-internet-label" data-i18n="chain_internet">🌐 Internet</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Routing Presets Modal -->
+    <div id="import-routing-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <header class="modal-header">
+                <button class="modal-icon-btn" onclick="closeImportRoutingModal()">←</button>
+                <h2 data-i18n="modal_import_rules_title">Import Presets from JSON</h2>
+                <button class="modal-icon-btn check-btn" onclick="importRoutingRulesFromJson()">✓</button>
+            </header>
+            <div class="modal-body" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <div class="chain-info-box" data-i18n="import_rules_desc">
+                    Paste a routing rule preset JSON array below. Unlocked rules will be replaced; locked rules are kept.
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_rules_import_url">Import from URL</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="import-routing-url" data-i18n-placeholder="import_rules_url_placeholder" placeholder="https://example.com/rules.json" style="flex: 1;">
+                        <button class="modal-icon-btn" onclick="fetchRoutingPresetFromUrl()" data-i18n="btn_fetch" style="width: auto; padding: 0 14px;">Fetch</button>
+                    </div>
+                </div>
+                <textarea id="import-routing-textarea" data-i18n-placeholder="import_rules_placeholder" placeholder='[{"remarks":"...","domain":["geosite:google"],"outboundTag":"proxy"}]' style="height: 240px;"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- Routing Rule Modal -->
+    <div id="routing-rule-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <header class="modal-header">
+                <button class="modal-icon-btn" onclick="closeRoutingRuleModal()">←</button>
+                <h2 id="routing-rule-modal-title" data-i18n="modal_add_rule_title">Add Routing Rule</h2>
+                <button class="modal-icon-btn check-btn" onclick="saveRoutingRule()">✓</button>
+            </header>
+            <div class="modal-body">
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_remarks">Remarks</label>
+                    <input type="text" id="rule-remarks">
+                </div>
+
+                <div class="setting-item-row toggle-row" style="padding: 0 4px;">
+                    <label for="rule-locked"><span data-i18n="lbl_rule_locked">Locked, keep this rule when import presets</span></label>
+                    <input type="checkbox" id="rule-locked">
+                </div>
+
+                <div class="modal-section-divider" data-i18n="modal_section_rule_settings">Routing Rule Settings</div>
+
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_domain">domain</label>
+                    <input type="text" id="rule-domain" data-i18n-placeholder="rule_match_placeholder" placeholder="Separated by commas(,), e.g. google.com">
+                </div>
+
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_ip">ip</label>
+                    <input type="text" id="rule-ip" data-i18n-placeholder="rule_match_placeholder" placeholder="Separated by commas(,), e.g. 1.1.1.1">
+                </div>
+
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_port">port</label>
+                    <input type="text" id="rule-port" placeholder="443 or 1000-2000">
+                </div>
+
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_protocol">protocol</label>
+                    <input type="text" id="rule-protocol" placeholder="http,tls,bittorrent">
+                </div>
+
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_network">network</label>
+                    <select id="rule-network">
+                        <option value="">tcp,udp</option>
+                        <option value="tcp">tcp</option>
+                        <option value="udp">udp</option>
+                    </select>
+                </div>
+
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_outbound_tag">outboundTag</label>
+                    <select id="rule-outbound">
+                        <option value="proxy" data-i18n="opt_outbound_proxy">proxy</option>
+                        <option value="direct" data-i18n="opt_outbound_direct">direct</option>
+                        <option value="block" data-i18n="opt_outbound_block">block</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Subscription Modal -->
+    <div id="edit-sub-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <header class="modal-header">
+                <button class="modal-icon-btn" onclick="closeEditSubModal()">←</button>
+                <h2 data-i18n="modal_edit_sub_title">Edit Subscription</h2>
+                <button class="modal-icon-btn check-btn" onclick="saveEditedSubscription()">✓</button>
+            </header>
+            <div class="modal-body" style="padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_sub_cat_name">Category Name</label>
+                    <input type="text" id="edit-sub-cat-name">
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_sub_url">Subscription URL</label>
+                    <input type="text" id="edit-sub-url" placeholder="https://...">
+                </div>
+                <div class="setting-item-row toggle-row" style="padding: 0;">
+                    <label class="toggle-switch">
+                        <span data-i18n="lbl_sub_dedup">Deduplicate configurations when fetching</span>
+                    </label>
+                    <input type="checkbox" id="edit-sub-dedup" checked>
+                    <span class="toggle-slider"></span>
+                </div>
+                <div class="setting-item-row toggle-row" style="padding: 0;">
+                    <label for="edit-sub-insecure">
+                        <span data-i18n="lbl_sub_insecure">Skip TLS certificate check</span>
+                        <small data-i18n="desc_sub_insecure">Unsafe — only for hosts with a self-signed certificate. Anyone on the network can then replace this subscription's contents.</small>
+                    </label>
+                    <input type="checkbox" id="edit-sub-insecure">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="loading-overlay" class="modal-overlay" style="display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(3px);">
+        <div style="background: rgba(0, 0, 0, 0.85); padding: 24px 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; gap: 16px; border: 1px solid #333; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+            <div class="spinner"></div>
+            <div id="loading-text" style="color: #fff; font-size: 15px; font-weight: 500;" data-i18n="loading_please_wait">Please wait...</div>
+        </div>
+    </div>
+</body>
+</html>
