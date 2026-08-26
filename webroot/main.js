@@ -187,7 +187,12 @@ function applyActiveConfig(options = {}) {
         }
         execShell(`sh ${MODDIR}/proxy_control.sh status`, (status) => {
             if (status === 'running') {
-                toggleService('restart');
+                // Node/config changed but nothing that apply_routing_rules
+                // reads did — swap the xray process only, leave the
+                // iptables/policy routing rules exactly as they are.
+                execShell(`sh ${MODDIR}/proxy_control.sh reload`, () => {
+                    _markStatusPending();
+                });
             }
             if (onDone) onDone(true);
         });
@@ -266,7 +271,7 @@ function _markStatusPending() {
 // from inline handlers, so it is validated against a fixed list rather than
 // interpolated straight into the command.
 const PROXY_CONTROL_ACTIONS = [
-    'start', 'stop', 'restart', 'status', 'reapply',
+    'start', 'stop', 'restart', 'reload', 'status', 'reapply',
     'start_monitor_latency', 'stop_monitor_latency', 'reset_mobile_network',
     'gateway_start', 'gateway_stop', 'gateway_status'
 ];
@@ -369,7 +374,10 @@ async function fetchSubscription(category, url, isReload = false) {
 
     showLoading(`${t("toast_fetch_sub")}${category}...`);
 
+    const userAgent = (profiles[category]?.useragent || "").trim() || DEFAULT_SUB_USERAGENT;
+
     const cmd = `${MODDIR}/bin/curl ${viaProxy} ${tlsArgs} -sSL -f --max-redirs 3 ` +
+                `-A ${shQuote(userAgent)} ` +
                 `--proto '=http,https' --proto-redir '=http,https' ` +
                 `--max-time 15 ${shQuote(url)}`;
 
@@ -1920,6 +1928,7 @@ function openEditSubModal(category) {
     document.getElementById('edit-sub-url').value = catData.url || '';
     document.getElementById('edit-sub-dedup').checked = catData.dedup !== false; // default true
     document.getElementById('edit-sub-insecure').checked = catData.insecure === true; // default false
+    document.getElementById('edit-sub-useragent').value = catData.useragent || DEFAULT_SUB_USERAGENT;
     document.getElementById('edit-sub-modal').dataset.originalCat = category;
     document.getElementById('edit-sub-modal').style.display = 'block';
 }
@@ -1935,6 +1944,7 @@ function saveEditedSubscription() {
     const newUrl = document.getElementById('edit-sub-url').value.trim();
     const newDedup = document.getElementById('edit-sub-dedup').checked;
     const newInsecure = document.getElementById('edit-sub-insecure').checked;
+    const newUserAgent = document.getElementById('edit-sub-useragent').value.trim() || DEFAULT_SUB_USERAGENT;
 
     if (!newName) return;
     if (!profiles[originalCat]) return;
@@ -1954,6 +1964,7 @@ function saveEditedSubscription() {
     profiles[newName].url = newUrl || null;
     profiles[newName].dedup = newDedup;
     profiles[newName].insecure = newInsecure;
+    profiles[newName].useragent = newUserAgent;
 
     saveProfiles();
     closeEditSubModal();
@@ -2406,7 +2417,12 @@ function saveAdvancedSettingsForm(isLangOnly = false) {
     writeFileB64(SETTINGS_FILE, utoa(JSON.stringify(advSettings)), () => {
         if (isLangOnly) return;
         showToast(t('toast_settings_saved'), "success");
-        applyActiveConfig();
+        // This form can change networkMode/allowTether/enableIPv6, which
+        // apply_routing_rules reads directly — unlike a node switch or an
+        // Xray-level routing-rule edit, those DO require the iptables rules
+        // to be torn down and rebuilt, so this path keeps the full restart
+        // rather than the soft reload applyActiveConfig() defaults to.
+        applyActiveConfig({ force: true });
     });
 }
 

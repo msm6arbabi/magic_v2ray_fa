@@ -1,6 +1,6 @@
 {
-  "version": "v1.11-farsi",
-  "versionCode": 142,
-  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.11-farsi/MagicV2Ray_FA_v1.11-farsi.zip",
-  "changelog": "نسخه فارسی - پشتیبانی کامل از زبان فارسی در رابط کاربری"
+  "version": "v1.11.3-farsi",
+  "versionCode": 145,
+  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.11.3-farsi/MagicV2Ray_FA_v1.11.3-farsi.zip",
+  "changelog": "نسخه فارسی v1.11.3 - مبتنی بر آپ‌استریم v1.11.3 (soft reload, per-sub UA, IPv6/Hysteria2 fixes)"
 }

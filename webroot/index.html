@@ -16,7 +16,6 @@
             <div class="lang-switcher">
                 <select id="lang-select" onchange="changeLanguage(this.value)" style="padding: 4px 8px; border-radius: 4px; background: var(--bg-panel, #222); color: var(--text-main, #fff); border: 1px solid #444;">
                     <option value="en">English</option>
-                    <option value="fa">فارسی</option>
                     <option value="vi">Tiếng Việt</option>
                     <option value="zh">简体中文</option>
                     <option value="zh-tw">繁體中文</option>
@@ -896,6 +895,10 @@
                         <small data-i18n="desc_sub_insecure">Unsafe — only for hosts with a self-signed certificate. Anyone on the network can then replace this subscription's contents.</small>
                     </label>
                     <input type="checkbox" id="edit-sub-insecure">
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_sub_useragent">User-Agent</label>
+                    <input type="text" id="edit-sub-useragent" placeholder="v2rayNG/2.2.3">
                 </div>
             </div>
         </div>

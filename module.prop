@@ -1,7 +1,7 @@
 id=magic_v2ray
 name=Magic V2Ray FA
-version=v1.11-farsi & Xray-core@v26.7.28
-versionCode=142
+version=v1.11.3-farsi & Xray-core@v26.7.28
+versionCode=145
 author=HuskyDG @vincentng295 | Farsi: Meysam
 description=نسخه فارسی - پروکسی شفاف Xray-core. Manage configurations via KSU webui!
 updateJson=https://github.com/msm6arbabi/magic_v2ray_fa/releases/latest/download/update.json
