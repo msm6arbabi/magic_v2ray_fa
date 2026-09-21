@@ -9,10 +9,14 @@
 <body>
     <div class="container">
         <header style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
+            <div style="min-width: 0; flex: 1;">
                 <h1>Magic V2Ray</h1>
-                <div class="status-badge" id="service-status">Status: Checking...</div>
+                <div class="status-badge" id="service-status" role="button" tabindex="0"
+                     onclick="showCurrentIp()"
+                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showCurrentIp();}">Status: Checking...</div>
+                <div class="status-ip" id="status-ip" hidden></div>
             </div>
+            <div class="header-actions">
             <div class="lang-switcher">
                 <select id="lang-select" onchange="changeLanguage(this.value)" style="padding: 4px 8px; border-radius: 4px; background: var(--bg-panel, #222); color: var(--text-main, #fff); border: 1px solid #444;">
                     <option value="en">English</option>
@@ -22,15 +26,25 @@
                     <option value="fa">فارسی</option>
                 </select>
             </div>
+            <div class="tab-menu">
+                <button type="button" id="tab-menu-btn" class="tab-menu-btn"
+                        aria-haspopup="menu" aria-expanded="false" aria-controls="tab-menu"
+                        data-i18n-aria="tab_menu" aria-label="Menu" onclick="toggleTabMenu(event)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                </button>
+                <div id="tab-menu" class="tab-menu-dropdown" role="menu" aria-labelledby="tab-menu-btn">
+                    <button type="button" role="menuitem" class="tab-menu-item active" aria-current="page" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', event)" data-i18n="tab_dashboard">Dashboard</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-settings" onclick="switchTab('tab-settings', event)" data-i18n="tab_settings">Traffic Settings</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-network" onclick="switchTab('tab-network', event)" data-i18n="tab_network">Network Settings</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-routing" onclick="switchTab('tab-routing', event)" data-i18n="tab_routing">Routing Settings</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-hosts" onclick="switchTab('tab-hosts', event)" data-i18n="tab_hosts">Custom Hosts</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-log" onclick="switchTab('tab-log', event)" data-i18n="tab_log">Xray Log</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-latency" onclick="switchTab('tab-latency', event)" data-i18n="tab_latency">Network Latency</button>
+                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-about" onclick="switchTab('tab-about', event)" data-i18n="tab_about">About</button>
+                </div>
+            </div>
+            </div>
         </header>
-
-        <div class="tabs-navigation">
-            <button class="tab-btn active" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', event)" data-i18n="tab_dashboard">Dashboard</button>
-            <button class="tab-btn" data-tab="tab-settings" onclick="switchTab('tab-settings', event)" data-i18n="tab_settings">Traffic Settings</button>
-            <button class="tab-btn" data-tab="tab-routing" onclick="switchTab('tab-routing', event)" data-i18n="tab_routing">Routing Settings</button>
-            <button class="tab-btn" data-tab="tab-log" onclick="switchTab('tab-log', event)" data-i18n="tab_log">Xray Log</button>
-            <button class="tab-btn" data-tab="tab-latency" onclick="switchTab('tab-latency', event)" data-i18n="tab_latency">Network Latency</button>
-        </div>
 
         <div id="tab-dashboard" class="tab-content active">
             <section class="control-actions">
@@ -38,7 +52,36 @@
                 <button class="btn btn-stop" onclick="toggleService('stop')" data-i18n="btn_stop">Stop Engine</button>
             </section>
 
-            <section class="import-section">
+            <section class="pro-mode-bar">
+                <div class="setting-item-row toggle-row">
+                    <label for="set-promode"><span data-i18n="lbl_promode">Professional Mode</span><small data-i18n="desc_promode">Write config.json by hand instead of picking a node</small></label>
+                    <input type="checkbox" id="set-promode" onchange="toggleProMode(this)">
+                </div>
+            </section>
+
+            <section id="pro-config-section" class="pro-config-section" style="display:none;">
+                <h3 data-i18n="pro_title">Custom config.json</h3>
+                <details class="pro-doc" open>
+                    <summary data-i18n="pro_doc_title">Read this before editing</summary>
+                    <ul>
+                        <li data-i18n="pro_doc_fwmark">fwmark 255</li>
+                        <li data-i18n="pro_doc_tun">tun-in</li>
+                        <li data-i18n="pro_doc_socks">socks-test-in</li>
+                        <li data-i18n="pro_doc_direct">direct / block</li>
+                        <li data-i18n="pro_doc_dns">DNS</li>
+                        <li data-i18n="pro_doc_tabs">Other tabs</li>
+                    </ul>
+                </details>
+                <textarea id="pro-config-input" class="pro-config-input" spellcheck="false" autocomplete="off" autocapitalize="off" data-i18n-placeholder="pro_placeholder" placeholder="Paste your full Xray config.json here..."></textarea>
+                <div class="pro-btn-row">
+                    <button class="btn btn-primary" onclick="applyCustomConfig()" data-i18n="btn_pro_apply">Save &amp; Apply</button>
+                    <button class="btn btn-secondary" onclick="validateCustomConfigUi()" data-i18n="btn_pro_validate">Validate</button>
+                    <button class="btn btn-secondary" onclick="formatCustomConfig()" data-i18n="btn_pro_format">Format JSON</button>
+                    <button class="btn btn-secondary" onclick="loadCustomConfigTemplate()" data-i18n="btn_pro_template">Load Template</button>
+                </div>
+            </section>
+
+            <section class="import-section" id="import-section">
                 <h3 data-i18n="import_title">Import Configuration Profile</h3>
                 <textarea id="import-input" data-i18n-placeholder="import_placeholder" placeholder="Paste Sub Link (https://...) or Manual String (vless://, vmess://, trojan://) here..."></textarea>
                 <div class="import-btn-row">
@@ -66,7 +109,7 @@
                 <input type="file" id="import-file-input" accept=".txt,.conf,.json" style="display:none;" onchange="handleFileImport(event)">
             </section>
 
-            <section class="profiles-section">
+            <section class="profiles-section" id="profiles-section">
                 <h3 data-i18n="categories_title">Connection Categories</h3>
                 <div id="profiles-container"></div>
             </section>
@@ -100,14 +143,14 @@
                         <input type="checkbox" id="set-routeonly">
                     </div>
 
-                    <div class="setting-item-row toggle-row">
-                        <label for="set-enableipv6"><span data-i18n="lbl_enableipv6">Enable IPv6</span><small data-i18n="desc_enableipv6">Allow IPv6 network connectivity</small></label>
-                        <input type="checkbox" id="set-enableipv6">
-                    </div>
-
-                    <div class="setting-item-row toggle-row">
-                        <label for="set-preferipv6"><span data-i18n="lbl_preferipv6">Prefer IPv6</span><small data-i18n="desc_preferipv6">Prioritize IPv6 address routes</small></label>
-                        <input type="checkbox" id="set-preferipv6">
+                    <div class="setting-item-row">
+                        <label for="set-query-strategy"><span data-i18n="lbl_query_strategy">DNS query strategy</span><small data-i18n="desc_query_strategy">Which IP record types Xray's DNS module queries (A / AAAA)</small><small class="routing-strategy-hint" id="query-strategy-hint" data-i18n="hint_qs_useipv4"></small></label>
+                        <select id="set-query-strategy" onchange="syncQueryStrategyHint()">
+                            <option value="UseIP">UseIP</option>
+                            <option value="UseIPv4">UseIPv4</option>
+                            <option value="UseIPv6">UseIPv6</option>
+                            <option value="UseSystem">UseSystem</option>
+                        </select>
                     </div>
 
                     <div class="setting-item-row toggle-row">
@@ -160,20 +203,8 @@
                 <div class="settings-group-box">
                     <h4 data-i18n="group_network">Network Interfaces</h4>
                     <div class="setting-item-row">
-                        <label><span data-i18n="lbl_networkmode">Apply Proxy On</span><small data-i18n="desc_networkmode">Restrict which network interfaces are routed through the proxy</small></label>
-                        <select id="set-networkmode">
-                            <option value="0" data-i18n="network_mode_all">All Networks</option>
-                            <option value="1" data-i18n="network_mode_wifi">WiFi / Ethernet Only</option>
-                            <option value="2" data-i18n="network_mode_mobile">Mobile Data Only</option>
-                        </select>
-                    </div>
-                    <div class="setting-item-row">
                         <label data-i18n="lbl_mtu">Maximum Transmission Unit (MTU)</label>
                         <input type="number" id="set-mtu" value="1350">
-                    </div>
-                    <div class="setting-item-row toggle-row">
-                        <label for="set-allowtether"><span data-i18n="lbl_allowtether">Allow Tether from Proxy</span><small data-i18n="desc_allowtether">Route tethered/hotspot clients through the proxy. Disable to let them bypass the proxy and use the direct connection.</small></label>
-                        <input type="checkbox" id="set-allowtether" checked>
                     </div>
                 </div>
 
@@ -207,7 +238,92 @@
                     </div>
                 </div>
 
+                <div class="settings-group-box">
+                    <h4 data-i18n="group_dns_engine">DNS Engine Options</h4>
+
+                    <div class="setting-item-row toggle-row" id="row-dns-disablecache">
+                        <label for="set-dns-disablecache"><span data-i18n="lbl_dns_disablecache">Disable DNS cache</span><small data-i18n="desc_dns_disablecache">Do not cache DNS answers in Xray (system DNS is not affected)</small></label>
+                        <input type="checkbox" id="set-dns-disablecache" onchange="syncDnsEngineOptions()">
+                    </div>
+
+                    <div class="setting-item-row toggle-row" id="row-dns-servestale">
+                        <label for="set-dns-servestale"><span data-i18n="lbl_dns_servestale">Serve stale cache</span><small data-i18n="desc_dns_servestale">Return expired cache instantly and refresh it in the background</small></label>
+                        <input type="checkbox" id="set-dns-servestale" onchange="syncDnsEngineOptions()">
+                    </div>
+
+                    <div class="setting-item-row" id="row-dns-servettl">
+                        <label for="set-dns-servettl"><span data-i18n="lbl_dns_servettl">Stale cache lifetime (s)</span><small data-i18n="desc_dns_servettl">How long expired entries may still be served. 0 = never expires</small></label>
+                        <input type="number" id="set-dns-servettl" min="0" step="1" value="0">
+                    </div>
+
+                    <div class="setting-item-row toggle-row" id="row-dns-disablefallback">
+                        <label for="set-dns-disablefallback"><span data-i18n="lbl_dns_disablefallback">Disable fallback</span><small data-i18n="desc_dns_disablefallback">Never query servers that did not match the domain list</small></label>
+                        <input type="checkbox" id="set-dns-disablefallback" onchange="syncDnsEngineOptions()">
+                    </div>
+
+                    <div class="setting-item-row toggle-row" id="row-dns-disablefallbackifmatch">
+                        <label for="set-dns-disablefallbackifmatch"><span data-i18n="lbl_dns_disablefallbackifmatch">Disable fallback if matched</span><small data-i18n="desc_dns_disablefallbackifmatch">Skip fallback servers when a server's domain list already matched</small></label>
+                        <input type="checkbox" id="set-dns-disablefallbackifmatch" onchange="syncDnsEngineOptions()">
+                    </div>
+
+                    <div class="setting-item-row toggle-row" id="row-dns-parallel">
+                        <label for="set-dns-parallel"><span data-i18n="lbl_dns_parallel">Parallel query</span><small data-i18n="desc_dns_parallel">Query servers at the same time to speed up resolving</small></label>
+                        <input type="checkbox" id="set-dns-parallel" onchange="syncDnsEngineOptions()">
+                    </div>
+
+                    <div class="setting-item-row toggle-row" id="row-dns-systemhosts">
+                        <label for="set-dns-systemhosts"><span data-i18n="lbl_dns_systemhosts">Use system hosts</span><small data-i18n="desc_dns_systemhosts">Append the device hosts file to the built-in DNS hosts</small></label>
+                        <input type="checkbox" id="set-dns-systemhosts" onchange="syncDnsEngineOptions()">
+                    </div>
+                </div>
+
                 <button class="btn btn-primary btn-save-settings" onclick="saveAdvancedSettingsForm()" data-i18n="btn_save_settings">Save & Apply Configurations</button>
+            </section>
+        </div>
+
+        <!-- ===== Network Settings Tab ===== -->
+        <!-- OS-level switches read by apply_routing_rules: saving here always
+             does a full engine restart (see saveNetworkSettingsForm). -->
+        <div id="tab-network" class="tab-content">
+            <section class="settings-form-panel">
+                <h3 data-i18n="network_settings_title">Network Settings</h3>
+                <p class="restart-notice" data-i18n="network_restart_notice">Saving on this tab fully restarts the engine, because these options change how traffic is routed at the OS level.</p>
+
+                <div class="settings-group-box">
+                    <h4 data-i18n="group_network_os">Interfaces &amp; tethering</h4>
+                    <div class="setting-item-row">
+                        <label><span data-i18n="lbl_networkmode">Apply Proxy On</span><small data-i18n="desc_networkmode">Restrict which network interfaces are routed through the proxy</small></label>
+                        <select id="set-networkmode">
+                            <option value="0" data-i18n="network_mode_all">All Networks</option>
+                            <option value="1" data-i18n="network_mode_wifi">WiFi / Ethernet Only</option>
+                            <option value="2" data-i18n="network_mode_mobile">Mobile Data Only</option>
+                        </select>
+                    </div>
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-enableipv6"><span data-i18n="lbl_enableipv6">Enable IPv6</span><small data-i18n="desc_enableipv6">Allow IPv6 network connectivity</small></label>
+                        <input type="checkbox" id="set-enableipv6">
+                    </div>
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-allowtether"><span data-i18n="lbl_allowtether">Allow Tether from Proxy</span><small data-i18n="desc_allowtether">Route tethered/hotspot clients through the proxy. Disable to let them bypass the proxy and use the direct connection.</small></label>
+                        <input type="checkbox" id="set-allowtether" checked>
+                    </div>
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-includelan"><span data-i18n="lbl_includelan">Include LAN traffic</span><small data-i18n="desc_includelan">Also send local-network traffic through Xray. Loopback (127.x.x.x and ::1) is always excluded.</small></label>
+                        <input type="checkbox" id="set-includelan">
+                    </div>
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-bypassiface"><span data-i18n="lbl_bypassiface">Bypass Network Interface</span><small data-i18n="desc_bypassiface">Traffic headed to these interfaces skips Xray entirely.</small></label>
+                        <input type="checkbox" id="set-bypassiface" onchange="toggleSubSettingField('set-bypassiface', 'bypassiface-sub-fields')">
+                    </div>
+                    <div id="bypassiface-sub-fields" class="sub-setting-panel">
+                        <div class="setting-item-row">
+                            <label data-i18n="lbl_bypassiface_list">Interfaces (comma-separated)</label>
+                            <input type="text" id="set-bypassiface-list" placeholder="tailscale0,wt0">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-save-settings" onclick="saveNetworkSettingsForm()" data-i18n="btn_save_network">Save &amp; Restart Engine</button>
             </section>
         </div>
 
@@ -227,9 +343,47 @@
                         </div>
                     </div>
                 </div>
+                <div class="settings-group-box routing-strategy-box">
+                    <div class="setting-item-row">
+                        <label for="set-domain-strategy"><span data-i18n="lbl_domain_strategy">Domain strategy</span><small data-i18n="desc_domain_strategy">How routing handles domain names when a rule matches on IP</small></label>
+                        <select id="set-domain-strategy" onchange="onDomainStrategyChange(this)">
+                            <option value="auto" data-i18n="domain_strategy_auto">Automatic (default)</option>
+                            <option value="AsIs">AsIs</option>
+                            <option value="IPIfNonMatch">IPIfNonMatch</option>
+                            <option value="IPOnDemand">IPOnDemand</option>
+                        </select>
+                    </div>
+                    <p class="routing-strategy-hint" id="domain-strategy-hint" data-i18n="hint_ds_auto"></p>
+                </div>
                 <div id="routing-rules-container"></div>
                 <div id="routing-empty-state" class="routing-empty-state" style="display:none;">
                     <span data-i18n="routing_empty">No custom routing rules yet.<br>Tap + to add a domain or IP rule.</span>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== Custom Hosts Tab ===== -->
+        <div id="tab-hosts" class="tab-content">
+            <section class="hosts-panel">
+                <div class="hosts-panel-header">
+                    <h3 data-i18n="hosts_title">Custom Hosts</h3>
+                    <div class="hosts-header-actions">
+                        <button class="btn-hosts-reload" id="btn-hosts-reload" onclick="reloadHostsFile()" data-i18n-title="btn_reload_hosts" title="Reload hosts file">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                        </button>
+                        <button class="btn-add-node" onclick="openAddHostModal()" title="Add host">+</button>
+                    </div>
+                </div>
+                <p class="hosts-panel-desc" data-i18n="hosts_panel_desc">Merged into dns.hosts on top of the built-in defaults. One domain per entry; a domain can have several IPs.</p>
+
+                <div class="hosts-search-bar">
+                    <input type="text" id="hosts-search-input" oninput="onHostsSearchInput()"
+                           data-i18n-placeholder="ph_hosts_search" placeholder="Search domain or IP...">
+                </div>
+
+                <div id="hosts-list-container" class="hosts-list-container" onscroll="onHostsListScroll()"></div>
+                <div id="hosts-empty-state" class="hosts-empty-state" style="display:none;">
+                    <span data-i18n="hosts_empty">No custom hosts yet.<br>Tap + to add a domain.</span>
                 </div>
             </section>
         </div>
@@ -291,6 +445,43 @@
                         <option value="500">500</option>
                         <option value="1000">1000</option>
                     </select>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== About Tab ===== -->
+        <!-- Links come from the ABOUT_* / SUPPORT_* constants in vars.js
+             (see initAboutTab in main.js); a row whose URL is empty is hidden. -->
+        <div id="tab-about" class="tab-content">
+            <section class="settings-form-panel about-panel">
+                <div class="settings-group-box about-hero">
+                    <h3>Magic V2Ray</h3>
+                    <p class="about-tagline" data-i18n="about_tagline">System-wide proxy for rooted Android, powered by Xray-core.</p>
+                    <p class="about-version" id="about-version-row" hidden><span data-i18n="about_version">Module version</span>: <b id="about-version"></b></p>
+                    <p class="about-intro" data-i18n="about_intro">Magic V2Ray runs as a root daemon and marks traffic at the Netfilter layer, so every app — system UIDs and hotspot clients included — goes through your proxy without taking Android's single VPN slot.</p>
+                </div>
+
+                <div class="settings-group-box">
+                    <h4 data-i18n="about_author_title">Author</h4>
+                    <a class="about-link" data-about-link="author" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span class="about-link-text"><span>HuskyDG</span><small>@vincentng295 · GitHub</small></span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                </div>
+
+                <div class="settings-group-box">
+                    <h4 data-i18n="about_links_title">Links &amp; support</h4>
+                    <a class="about-link" data-about-link="telegram" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span data-i18n="about_link_telegram">Telegram support group</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <a class="about-link" data-about-link="repo" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span data-i18n="about_link_github">Source code on GitHub</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <a class="about-link" data-about-link="releases" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span data-i18n="about_link_releases">Latest release</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <a class="about-link" data-about-link="issues" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span data-i18n="about_link_issues">Report a bug or request a feature</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <a class="about-link" data-about-link="website" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span data-i18n="about_link_website">Website</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                </div>
+
+                <div class="settings-group-box">
+                    <h4 data-i18n="about_credits_title">Credits</h4>
+                    <p class="about-intro" data-i18n="about_credits_desc">Built on pre-built binaries from these open-source projects:</p>
+                    <a class="about-link" data-about-link="xray" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span>Xray-core</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <a class="about-link" data-about-link="openxtun" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span>openxtun</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <a class="about-link" data-about-link="curl" href="#" target="_blank" rel="noopener noreferrer" onclick="openExternalLink(event, this)"><span>curl-android</span><svg class="about-link-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+                    <p class="about-license" data-i18n="about_license">Open source under the GNU General Public License v3.0.</p>
                 </div>
             </section>
         </div>
@@ -417,6 +608,16 @@
                 <div class="edit-item-field" id="field-group-uuid">
                     <label data-i18n="lbl_id">ID / Password</label>
                     <input type="text" id="edit-uuid">
+                </div>
+                <!-- VLESS Encryption (post-quantum, outbound `encryption` field —
+                     the client-side counterpart of the server's `decryption`).
+                     Free-text since the value is a dot-separated block string,
+                     e.g. mlkem768x25519plus.native.600s.100-111-1111.75-0-111.50-0-3333.<auth>
+                     Leave empty / "none" to disable. -->
+                <div class="edit-item-field" id="field-group-vless-encryption" style="display:none;">
+                    <label data-i18n="lbl_vless_encryption">VLESS Encryption</label>
+                    <input type="text" id="edit-vless-encryption" spellcheck="false" placeholder="none">
+                    <small class="field-hint" data-i18n="hint_vless_encryption">Post-quantum VLESS Encryption string (mlkem768x25519plus.native.600s...). Leave empty or "none" to disable.</small>
                 </div>
                 <div id="subfields-vmess" class="conditional-fields">
                     <div class="edit-item-field" id="field-group-alterid">
@@ -669,6 +870,19 @@
 
                 </div><!-- end section-transport-wrapper -->
 
+                <!-- FINALMASK section (streamSettings.finalmask).
+                     Network-agnostic: it sits alongside tcpSettings/tlsSettings
+                     rather than inside them, so it is shown for the classic
+                     protocols AND for Hysteria2 (quicParams / udpHop / salamander). -->
+                <div id="section-finalmask-wrapper">
+                <div class="modal-section-divider" data-i18n="lbl_finalmask">FINALMASK</div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_finalmask_json">FinalMask (JSON)</label>
+                    <textarea id="edit-finalmask" rows="6" spellcheck="false" placeholder='{"tcp":[{"type":"fragment","settings":{"packets":"tlshello","lengths":["3-5"],"delays":["10-20"]}}],"udp":[],"quicParams":{"congestion":"bbr"}}'></textarea>
+                    <small class="field-hint" data-i18n="hint_finalmask">Full FinalMaskObject: keys tcp / udp / quicParams. Leave empty to disable.</small>
+                </div>
+                </div><!-- end section-finalmask-wrapper -->
+
                 <!-- SECURITY section (vmess/vless/trojan/shadowsocks; hidden for WireGuard / SOCKS / HTTP / Hysteria2) -->
                 <div id="section-security-wrapper">
                 <div class="modal-section-divider" data-i18n="lbl_tls">SECURITY</div>
@@ -861,6 +1075,27 @@
                         <option value="direct" data-i18n="opt_outbound_direct">direct</option>
                         <option value="block" data-i18n="opt_outbound_block">block</option>
                     </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Custom Host Modal -->
+    <div id="hosts-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-window">
+            <header class="modal-header">
+                <button class="modal-icon-btn" onclick="closeHostModal()">←</button>
+                <h2 id="hosts-modal-title" data-i18n="modal_add_host_title">Add Host</h2>
+                <button class="modal-icon-btn check-btn" onclick="saveHostEntry()">✓</button>
+            </header>
+            <div class="modal-body">
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_domain">domain</label>
+                    <input type="text" id="host-domain-input" data-i18n-placeholder="ph_host_domain" placeholder="example.com or domain:googleapis.cn">
+                </div>
+                <div class="edit-item-field">
+                    <label data-i18n="lbl_host_ips">IP(s)</label>
+                    <input type="text" id="host-ips-input" data-i18n-placeholder="ph_host_ips" placeholder="1.2.3.4, 1.2.3.5">
                 </div>
             </div>
         </div>
