@@ -158,6 +158,11 @@
                         <input type="checkbox" id="set-dnsviaproxy">
                     </div>
 
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-hijackdns"><span data-i18n="lbl_hijackdns">Hijack DNS</span><small data-i18n="desc_hijackdns">Route DNS query to Xray's DNS module</small></label>
+                        <input type="checkbox" id="set-hijackdns">
+                    </div>
+
                     <div class="setting-item-row">
                         <label><span data-i18n="lbl_pinned_cert">Pinned Peer Cert SHA256</span><small data-i18n="desc_pinned_cert">Pin the SHA256 hash of the server certificate.</small></label>
                         <input type="text" id="set-pinned-cert" placeholder="">
@@ -227,7 +232,7 @@
 
                         <div class="setting-item-row" id="dns-row-foreign">
                             <label for="set-foreign-dns"><span data-i18n="lbl_foreign_dns">Foreign DNS (Optional)</span><small data-i18n="desc_foreign_dns">Resolver for non-domestic domains</small></label>
-                            <input type="text" id="set-foreign-dns" placeholder="1.1.1.1" value="1.1.1.1">
+                            <input type="text" id="set-foreign-dns" placeholder="1.1.1.1, 8.8.8.8">
                         </div>
 
                         <div class="setting-item-row" id="dns-row-domestic">
@@ -278,6 +283,7 @@
                 </div>
 
                 <button class="btn btn-primary btn-save-settings" onclick="saveAdvancedSettingsForm()" data-i18n="btn_save_settings">Save & Apply Configurations</button>
+                <button class="btn btn-primary btn-save-settings btn-reset-settings" onclick="resetTrafficSettings()" data-i18n="btn_reset_traffic">Reset to Defaults</button>
             </section>
         </div>
 
