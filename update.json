@@ -1,6 +1,6 @@
 {
-  "version": "v1.17.2-farsi",
-  "versionCode": 157,
-  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.17.2-farsi/MagicV2Ray_FA_v1.17.2-farsi-arm64.zip",
-  "changelog": "نسخه فارسی v1.17.2 (ARM64) - مبتنی بر آپ‌استریم v1.17.2 | Xray-core v26.9.9 | گزینه‌های موتور DNS، استراتژی query، LAN، ویرایش hosts"
+  "version": "v1.18-farsi",
+  "versionCode": 158,
+  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.18-farsi/MagicV2Ray_FA_v1.18-farsi-arm64.zip",
+  "changelog": "نسخه فارسی v1.18 (ARM64) - مبتنی بر آپ‌استریم v1.18 | Xray-core v26.9.9 | FakeDNS IPv6، Hijack DNS، reset تنظیمات ترافیک، DNS خارجی چندسرور"
 }
