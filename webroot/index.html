@@ -8,50 +8,51 @@
 </head>
 <body>
     <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="min-width: 0; flex: 1;">
-                <h1>Magic V2Ray</h1>
-                <div class="status-badge" id="service-status" role="button" tabindex="0"
-                     onclick="showCurrentIp()"
-                     onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showCurrentIp();}">Status: Checking...</div>
-                <div class="status-ip" id="status-ip" hidden></div>
-            </div>
-            <div class="header-actions">
-            <div class="lang-switcher">
-                <select id="lang-select" onchange="changeLanguage(this.value)" style="padding: 4px 8px; border-radius: 4px; background: var(--bg-panel, #222); color: var(--text-main, #fff); border: 1px solid #444;">
-                    <option value="en">English</option>
-                    <option value="vi">Tiếng Việt</option>
-                    <option value="zh">简体中文</option>
-                    <option value="zh-tw">繁體中文</option>
+        <header>
+            <div class="header-top-row">
+                <div style="min-width: 0; flex: 1;">
+                    <h1>Magic V2Ray</h1>
+                    <div class="status-badge" id="service-status" role="button" tabindex="0"
+                         onclick="showCurrentIp()"
+                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showCurrentIp();}">Status: Checking...</div>
+                    <div class="status-ip" id="status-ip" hidden></div>
+                </div>
+                <div class="header-actions">
+                <div class="lang-switcher">
+                    <select id="lang-select" onchange="changeLanguage(this.value)" style="padding: 4px 8px; border-radius: 4px; background: var(--bg-panel, #222); color: var(--text-main, #fff); border: 1px solid #444;">
+                        <option value="en">English</option>
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="zh">简体中文</option>
+                        <option value="zh-tw">繁體中文</option>
                     <option value="fa">فارسی</option>
-                </select>
-            </div>
-            <div class="tab-menu">
-                <button type="button" id="tab-menu-btn" class="tab-menu-btn"
-                        aria-haspopup="menu" aria-expanded="false" aria-controls="tab-menu"
-                        data-i18n-aria="tab_menu" aria-label="Menu" onclick="toggleTabMenu(event)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-                </button>
-                <div id="tab-menu" class="tab-menu-dropdown" role="menu" aria-labelledby="tab-menu-btn">
-                    <button type="button" role="menuitem" class="tab-menu-item active" aria-current="page" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', event)" data-i18n="tab_dashboard">Dashboard</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-settings" onclick="switchTab('tab-settings', event)" data-i18n="tab_settings">Traffic Settings</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-network" onclick="switchTab('tab-network', event)" data-i18n="tab_network">Network Settings</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-routing" onclick="switchTab('tab-routing', event)" data-i18n="tab_routing">Routing Settings</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-hosts" onclick="switchTab('tab-hosts', event)" data-i18n="tab_hosts">Custom Hosts</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-log" onclick="switchTab('tab-log', event)" data-i18n="tab_log">Xray Log</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-latency" onclick="switchTab('tab-latency', event)" data-i18n="tab_latency">Network Latency</button>
-                    <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-about" onclick="switchTab('tab-about', event)" data-i18n="tab_about">About</button>
+                    </select>
+                </div>
+                <div class="tab-menu">
+                    <button type="button" id="tab-menu-btn" class="tab-menu-btn"
+                            aria-haspopup="menu" aria-expanded="false" aria-controls="tab-menu"
+                            data-i18n-aria="tab_menu" aria-label="Menu" onclick="toggleTabMenu(event)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                    </button>
+                    <div id="tab-menu" class="tab-menu-dropdown" role="menu" aria-labelledby="tab-menu-btn">
+                        <button type="button" role="menuitem" class="tab-menu-item active" aria-current="page" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', event)" data-i18n="tab_dashboard">Dashboard</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-settings" onclick="switchTab('tab-settings', event)" data-i18n="tab_settings">Traffic Settings</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-network" onclick="switchTab('tab-network', event)" data-i18n="tab_network">Network Settings</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-routing" onclick="switchTab('tab-routing', event)" data-i18n="tab_routing">Routing Settings</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-hosts" onclick="switchTab('tab-hosts', event)" data-i18n="tab_hosts">Custom Hosts</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-log" onclick="switchTab('tab-log', event)" data-i18n="tab_log">Xray Log</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-latency" onclick="switchTab('tab-latency', event)" data-i18n="tab_latency">Network Latency</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-about" onclick="switchTab('tab-about', event)" data-i18n="tab_about">About</button>
+                    </div>
+                </div>
                 </div>
             </div>
-            </div>
-        </header>
-
-        <div id="tab-dashboard" class="tab-content active">
-            <section class="control-actions">
+            <section class="control-actions header-control-actions">
                 <button class="btn btn-start" onclick="toggleService('start')" data-i18n="btn_start">Start Engine</button>
                 <button class="btn btn-stop" onclick="toggleService('stop')" data-i18n="btn_stop">Stop Engine</button>
             </section>
+        </header>
 
+        <div id="tab-dashboard" class="tab-content active">
             <section class="pro-mode-bar">
                 <div class="setting-item-row toggle-row">
                     <label for="set-promode"><span data-i18n="lbl_promode">Professional Mode</span><small data-i18n="desc_promode">Write config.json by hand instead of picking a node</small></label>
@@ -153,16 +154,6 @@
                         </select>
                     </div>
 
-                    <div class="setting-item-row toggle-row">
-                        <label for="set-dnsviaproxy"><span data-i18n="lbl_dnsviaproxy">Resolve DNS via Proxy</span><small data-i18n="desc_dnsviaproxy">Wrap and route all DNS resolver via Server</small></label>
-                        <input type="checkbox" id="set-dnsviaproxy">
-                    </div>
-
-                    <div class="setting-item-row toggle-row">
-                        <label for="set-hijackdns"><span data-i18n="lbl_hijackdns">Hijack DNS</span><small data-i18n="desc_hijackdns">Route DNS query to Xray's DNS module</small></label>
-                        <input type="checkbox" id="set-hijackdns">
-                    </div>
-
                     <div class="setting-item-row">
                         <label><span data-i18n="lbl_pinned_cert">Pinned Peer Cert SHA256</span><small data-i18n="desc_pinned_cert">Pin the SHA256 hash of the server certificate.</small></label>
                         <input type="text" id="set-pinned-cert" placeholder="">
@@ -220,8 +211,18 @@
                     </div>
                     <div id="dns-sub-fields" class="sub-setting-panel" style="display:none;">
 
+                        <div class="setting-item-row toggle-row">
+                            <label for="set-dnsviaproxy"><span data-i18n="lbl_dnsviaproxy">Resolve DNS via Proxy</span><small data-i18n="desc_dnsviaproxy">Wrap and route all DNS resolver via Server</small></label>
+                            <input type="checkbox" id="set-dnsviaproxy">
+                        </div>
+
+                        <div class="setting-item-row toggle-row">
+                            <label for="set-hijackdns"><span data-i18n="lbl_hijackdns">Hijack DNS</span><small data-i18n="desc_hijackdns">Route DNS query to Xray's DNS module</small></label>
+                            <input type="checkbox" id="set-hijackdns" onchange="updateDnsGroupVisibility()">
+                        </div>
+
                         <div class="setting-item-row toggle-row" id="dns-row-fakedns-local">
-                            <label for="set-fakedns-local"><span data-i18n="lbl_fakedns_local">Enable Fake DNS</span><small data-i18n="desc_fakedns_local">Use 198.18.0.0/15 pool to map domains to virtual IPs instantly</small></label>
+                            <label for="set-fakedns-local"><span data-i18n="lbl_fakedns_local">Enable Fake DNS</span><small data-i18n="desc_fakedns_local">Use 198.18.0.0/15 pool to map domains to virtual IPs instantly</small><small class="routing-strategy-hint" id="fakedns-hijack-hint" data-i18n="hint_fakedns_needs_hijack" style="display:none;">Requires Hijack DNS to be enabled</small></label>
                             <input type="checkbox" id="set-fakedns-local" onchange="updateDnsGroupVisibility()">
                         </div>
 
@@ -668,6 +669,10 @@
 
                 <!-- WireGuard-specific fields -->
                 <div id="subfields-wireguard" class="conditional-fields" style="display:none;">
+                    <div class="edit-item-field" style="flex-basis:100%;">
+                        <button type="button" id="btn-generate-warp" class="btn btn-secondary" onclick="generateWarpAccount()" data-i18n="btn_generate_warp" style="width:100%;">🌐 Generate built-in WARP account</button>
+                        <small data-i18n="hint_generate_warp" style="opacity:.7;display:block;margin-top:4px;">Registers a free Cloudflare WARP account and fills the fields below. Run again anytime for a new account.</small>
+                    </div>
                     <div class="edit-item-field">
                         <label data-i18n="lbl_wg_secret_key">Secret Key (Private Key)</label>
                         <input type="text" id="edit-wg-secret-key" placeholder="">
