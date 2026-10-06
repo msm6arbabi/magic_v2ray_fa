@@ -37,6 +37,7 @@
                         <button type="button" role="menuitem" class="tab-menu-item active" aria-current="page" data-tab="tab-dashboard" onclick="switchTab('tab-dashboard', event)" data-i18n="tab_dashboard">Dashboard</button>
                         <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-settings" onclick="switchTab('tab-settings', event)" data-i18n="tab_settings">Traffic Settings</button>
                         <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-network" onclick="switchTab('tab-network', event)" data-i18n="tab_network">Network Settings</button>
+                        <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-exclude" onclick="switchTab('tab-exclude', event)" data-i18n="tab_exclude">Exclude Apps</button>
                         <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-routing" onclick="switchTab('tab-routing', event)" data-i18n="tab_routing">Routing Settings</button>
                         <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-hosts" onclick="switchTab('tab-hosts', event)" data-i18n="tab_hosts">Custom Hosts</button>
                         <button type="button" role="menuitem" class="tab-menu-item" data-tab="tab-log" onclick="switchTab('tab-log', event)" data-i18n="tab_log">Xray Log</button>
@@ -308,7 +309,13 @@
                     </div>
                     <div class="setting-item-row toggle-row">
                         <label for="set-enableipv6"><span data-i18n="lbl_enableipv6">Enable IPv6</span><small data-i18n="desc_enableipv6">Allow IPv6 network connectivity</small></label>
-                        <input type="checkbox" id="set-enableipv6">
+                        <input type="checkbox" id="set-enableipv6" onchange="toggleSubSettingField('set-enableipv6', 'enableipv6ula-sub-fields')">
+                    </div>
+                    <div id="enableipv6ula-sub-fields" class="sub-setting-panel">
+                        <div class="setting-item-row toggle-row">
+                            <label for="set-enableipv6ula"><span data-i18n="lbl_enableipv6ula">Advertise IPv6 to apps</span><small data-i18n="desc_enableipv6ula">Adds a local-only IPv6 (ULA) address to the active network interface so apps believe IPv6 works and use it. Traffic is still carried by Xray. Needed when the real network has no IPv6.</small></label>
+                            <input type="checkbox" id="set-enableipv6ula">
+                        </div>
                     </div>
                     <div class="setting-item-row toggle-row">
                         <label for="set-allowtether"><span data-i18n="lbl_allowtether">Allow Tether from Proxy</span><small data-i18n="desc_allowtether">Route tethered/hotspot clients through the proxy. Disable to let them bypass the proxy and use the direct connection.</small></label>
@@ -334,6 +341,55 @@
             </section>
         </div>
 
+        <!-- ===== Exclude Apps Tab ===== -->
+        <!-- Logic lives in excludeapps.js. Enforcement is OS-level (service.sh),
+             so applying always does a full engine restart. -->
+        <div id="tab-exclude" class="tab-content">
+            <section class="settings-form-panel">
+                <h3 data-i18n="exclude_title">Exclude Apps</h3>
+                <p class="restart-notice" data-i18n="exclude_notice">Apps you switch on here bypass the proxy and use the direct connection. Applying a change fully restarts the engine, because it changes how traffic is routed at the OS level.</p>
+
+                <div class="settings-group-box">
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-exclude-enabled"><span data-i18n="lbl_exclude_enabled">Enable Exclude apps</span><small data-i18n="desc_exclude_enabled">Apps in the list below skip the proxy. Turn off to keep your list but proxy every app.</small></label>
+                        <input type="checkbox" id="set-exclude-enabled" onchange="onExcludeEnabledChange(this)">
+                    </div>
+                    <div class="setting-item-row toggle-row">
+                        <label for="set-exclude-autoapply"><span data-i18n="lbl_exclude_autoapply">Apply changes immediately</span><small data-i18n="desc_exclude_autoapply">Restart the engine automatically a moment after each change. Turn off to review your changes and apply them yourself.</small></label>
+                        <input type="checkbox" id="set-exclude-autoapply" onchange="onExcludeAutoApplyChange(this)">
+                    </div>
+                    <div id="exclude-apply-bar" class="exclude-apply-bar">
+                        <span id="exclude-pending-text" class="exclude-pending-text" data-i18n="exclude_pending">Unsaved changes</span>
+                        <button id="btn-exclude-apply" class="btn btn-primary" onclick="applyExcludeChanges()" data-i18n="btn_exclude_apply" disabled>Save &amp; Restart Engine</button>
+                    </div>
+                </div>
+
+                <div id="exclude-list-wrap" class="settings-group-box exclude-list-box">
+                    <div class="hosts-search-bar">
+                        <input type="text" id="exclude-search-input" oninput="onExcludeSearchInput()"
+                               data-i18n-placeholder="ph_exclude_search" placeholder="Search app name or package...">
+                    </div>
+                    <div id="exclude-filter-bar" class="log-filter-bar">
+                        <button class="log-filter-chip active" data-filter="user" onclick="setExcludeFilter('user')" data-i18n="exclude_filter_user">User</button>
+                        <button class="log-filter-chip" data-filter="system" onclick="setExcludeFilter('system')" data-i18n="exclude_filter_system">System</button>
+                        <button class="log-filter-chip" data-filter="all" onclick="setExcludeFilter('all')" data-i18n="exclude_filter_all">All</button>
+                        <button class="log-filter-chip" data-filter="excluded" onclick="setExcludeFilter('excluded')" data-i18n="exclude_filter_excluded">Excluded</button>
+                    </div>
+                    <div class="exclude-toolbar">
+                        <span id="exclude-count" class="exclude-count"></span>
+                        <span class="exclude-toolbar-actions">
+                            <button class="log-filter-chip" onclick="excludeSelectVisible(true)" data-i18n="exclude_select_visible">Select shown</button>
+                            <button class="log-filter-chip" onclick="excludeSelectVisible(false)" data-i18n="exclude_clear_visible">Clear shown</button>
+                        </span>
+                    </div>
+                    <div id="exclude-list-container" class="exclude-list-container" onscroll="onExcludeListScroll()"></div>
+                    <div id="exclude-empty-state" class="hosts-empty-state" style="display:none;">
+                        <span data-i18n="exclude_empty">No apps to show.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
         <!-- ===== Routing Settings Tab ===== -->
         <div id="tab-routing" class="tab-content">
             <section class="routing-panel">
@@ -354,13 +410,12 @@
                     <div class="setting-item-row">
                         <label for="set-domain-strategy"><span data-i18n="lbl_domain_strategy">Domain strategy</span><small data-i18n="desc_domain_strategy">How routing handles domain names when a rule matches on IP</small></label>
                         <select id="set-domain-strategy" onchange="onDomainStrategyChange(this)">
-                            <option value="auto" data-i18n="domain_strategy_auto">Automatic (default)</option>
-                            <option value="AsIs">AsIs</option>
+                            <option value="AsIs" data-i18n="domain_strategy_asis">AsIs (default)</option>
                             <option value="IPIfNonMatch">IPIfNonMatch</option>
                             <option value="IPOnDemand">IPOnDemand</option>
                         </select>
                     </div>
-                    <p class="routing-strategy-hint" id="domain-strategy-hint" data-i18n="hint_ds_auto"></p>
+                    <p class="routing-strategy-hint" id="domain-strategy-hint" data-i18n="hint_ds_asis"></p>
                 </div>
                 <div id="routing-rules-container"></div>
                 <div id="routing-empty-state" class="routing-empty-state" style="display:none;">
@@ -406,6 +461,14 @@
                     <div class="log-toolbar-right">
                         <button class="log-tool-btn" id="btn-log-tail" onclick="toggleLogTail()" title="Auto-scroll" data-active="true">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>
+                        </button>
+                        <div class="log-fontsize">
+                            <button class="log-tool-btn" onclick="changeLogFontSize(-1)" title="Smaller">−</button>
+                            <span class="log-fontsize-value" id="log-fontsize-value">12</span>
+                            <button class="log-tool-btn" onclick="changeLogFontSize(1)" title="Larger">+</button>
+                        </div>
+                        <button class="log-tool-btn" id="btn-log-wrap" onclick="toggleLogWrap()" title="Word wrap OFF" data-active="false">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><path d="M3 12h15a3 3 0 1 1 0 6h-4"/><polyline points="16 16 14 18 16 20"/><line x1="3" y1="18" x2="10" y2="18"/></svg>
                         </button>
                         <button class="log-tool-btn" onclick="copyLogToClipboard()" title="Copy log">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -501,10 +564,6 @@
                         <span class="latency-status-dot" id="latency-status-dot"></span>
                         <span class="latency-current-value" id="latency-current-value">— ms</span>
                     </div>
-                    <label class="log-autorefresh-label latency-enable-label">
-                        <input type="checkbox" id="latency-monitor-toggle" onchange="toggleLatencyMonitor()">
-                        <span data-i18n="latency_enable_monitor">Enable monitor</span>
-                    </label>
                 </div>
 
                 <div class="latency-network-info" id="latency-network-info">
@@ -578,6 +637,7 @@
     <script src="i18n.js"></script>
     <script src="vars.js"></script>
     <script src="main.js"></script>
+    <script src="excludeapps.js"></script>
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Confirm Modal (KSU webui does not support window.confirm()) -->
@@ -939,6 +999,10 @@
                     <div class="edit-item-field">
                         <label data-i18n="lbl_pcs">Pinned Cert SHA256</label>
                         <input type="text" id="edit-pcs" placeholder="base64 or hex sha256">
+                    </div>
+                    <div class="edit-item-field">
+                        <label data-i18n="lbl_vcn">Verify Peer Cert By Name</label>
+                        <input type="text" id="edit-vcn" placeholder="cert.example.com">
                     </div>
                     <div class="edit-item-field">
                         <label data-i18n="lbl_ech">ECH Config List</label>
