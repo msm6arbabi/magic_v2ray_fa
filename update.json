@@ -1,6 +1,6 @@
 {
-  "version": "v1.21-farsi",
-  "versionCode": 164,
-  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.21-farsi/MagicV2Ray_FA_v1.21-farsi-arm64.zip",
-  "changelog": "نسخه فارسی v1.21 (ARM64) - مبتنی بر آپ‌استریم v1.21 | Xray-core v26.9.30 | مستثنی‌کردن اپ‌ها، IPv6 ULA، ECH، تأیید گواهی با نام، هشدار VLESS بدون TLS"
+  "version": "v1.23-farsi",
+  "versionCode": 166,
+  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.23-farsi/MagicV2Ray_FA_v1.23-farsi-arm64.zip",
+  "changelog": "نسخه فارسی v1.23 (ARM64) - مبتنی بر آپ‌استریم v1.23 | Xray-core v26.9.30 | مدیریت DNS مستقیم/پروکسی، عبور LAN از Xray، پیکربندی DNS"
 }
