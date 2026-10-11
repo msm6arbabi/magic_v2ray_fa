@@ -1,67 +1,66 @@
-# Magic V2Ray
+# Magic V2Ray (نسخه فارسی)
 
-[Xem phiên bản Tiếng Việt](./README_vi.md)
+[Xem phiên bản Tiếng Việt](./README_vi.md) · [English README](./README_en.md)
 
-![screenshot_1](images/screenshot_1.jpg) 
+![screenshot_1](images/screenshot_1.jpg)
 
-A powerful and easy-to-use internet proxy manager for rooted Android devices. It helps you route all device traffic through a proxy server to secure your connection, bypass restrictions, and share your high-speed connection with other devices.
-
----
-
-## What is Magic V2Ray?
-
-**Magic V2Ray** is an advanced network tool designed for rooted Android phones. By combining top-tier proxy cores, it creates a seamless system-wide connection that covers all your apps. 
-
-It comes with a clean Web UI where you can easily organize your proxy configurations, save your subscription links, and manage your network with a few clicks.
+یک مدیر پروکسی قدرتمند و ساده برای دستگاه‌های اندروید روت‌شده. با آن می‌توانید کل ترافیک دستگاه را از یک سرور پروکسی عبور دهید تا اتصالتان امن شود، محدودیت‌ها را دور بزنید و اینترنت پرسرعتتان را با دستگاه‌های دیگر به اشتراک بگذارید.
 
 ---
 
-## Why Use Magic V2Ray for rooted Android devices?
+## Magic V2Ray چیست؟
 
-If you are used to standard V2Ray apps (like v2rayNG, Matsuri, Nekobox), here is why Magic V2Ray is a game-changer:
+**Magic V2Ray** یک ابزار شبکهٔ پیشرفته برای گوشی‌های اندرویدی روت‌شده است. با ترکیب هسته‌های پروکسی قوی، یک اتصال یکپارچهٔ سراسری ایجاد می‌کند که همهٔ اپ‌های شما را پوشش می‌دهد.
 
-- **Immortal System-Wide Coverage:** Standard apps run in user-space via Android's native `VpnService` API and get easily killed by Android's aggressive memory management (Low Memory Killer) when RAM is tight, dropping your connection or leaking your real IP. Magic V2Ray operates with Root privileges, running as a system daemon that the OS does not kill under memory pressure.
-- **Reaches traffic `VpnService` cannot:** A `VpnService` app only sees traffic from UIDs the framework routes to it. Magic V2Ray marks packets at the Netfilter layer, so it can also cover system UIDs, and it does not consume the single system-wide VPN slot — no conflict with a per-app VPN, and no persistent VPN key icon in the status bar.
-- **Native Hotspot / Tethering Support:** `VpnService` cannot carry tethered clients, because Android forwards their traffic outside the VPN's namespace. Magic V2Ray intercepts it at `PREROUTING` and policy-routes it into the same tunnel, so devices sharing your hotspot get the proxied connection too. See *LAN Gateway Sharing* below.
-- **Seamless Dynamic Reconnects:** Detects Wi-Fi ↔ 4G/5G handovers from kernel routing events (`ip monitor`) rather than polling, and re-applies the routing marks without waiting for a timeout.
-- **Universal Root Support:** Works across Magisk, KernelSU, and APatch.
+یک رابط وب تمیز دارد که در آن می‌توانید پیکربندی‌های پروکسی را مرتب کنید، لینک‌های اشتراک را ذخیره کنید و با چند کلیک شبکه‌تان را مدیریت کنید.
 
 ---
 
-## You dont have root?
+## چرا Magic V2Ray برای اندروید روت‌شده؟
+
+اگر به برنامه‌های معمول V2Ray (مثل v2rayNG، Matsuri یا Nekobox) عادت دارید، این دلایل را ببینید:
+
+- **پوشش سراسری و پایدار:** برنامه‌های معمولی در فضای کاربر و با API ‏`VpnService` اندروید کار می‌کنند و وقتی رم کم باشد، مدیریت حافظهٔ تهاجمی اندروید (Low Memory Killer) آن‌ها را می‌بندد. در نتیجه اتصال قطع می‌شود یا IP واقعی نشت می‌کند. Magic V2Ray با دسترسی روت کار می‌کند و به‌صورت دیمون سیستمی اجرا می‌شود که سیستم‌عامل زیر فشار حافظه نمی‌بندد.
+- **رسیدن به ترافیکی که `VpnService` نمی‌بیند:** یک اپ `VpnService` فقط ترافیک UIDهایی را می‌بیند که فریم‌ورک به آن‌ها می‌دهد. Magic V2Ray بسته‌ها را در لایهٔ Netfilter علامت‌گذاری می‌کند، پس UIDهای سیستمی را هم پوشش می‌دهد. همچنین اسلات VPN سراسری سیستم را اشغال نمی‌کند، پس با VPN اختصاصی هر اپ تداخل ندارد و آیکون کلید VPN هم در نوار وضعیت نمی‌ماند.
+- **پشتیبانی بومی از هات‌اسپات و اشتراک اینترنت:** `VpnService` نمی‌تواند ترافیک دستگاه‌های متصل به هات‌اسپات را حمل کند، چون اندروید آن ترافیک را خارج از فضای VPN فوروارد می‌کند. Magic V2Ray آن را در `PREROUTING` می‌گیرد و به همان تونل مسیریابی می‌کند، پس دستگاه‌هایی که هات‌اسپات شما را استفاده می‌کنند هم اتصال پروکسی‌شده دارند.
+- **اتصال مجدد پویا و بی‌وقفه:** تغییر شبکه بین Wi-Fi و 4G/5G را از رویدادهای مسیریابی هسته (`ip monitor`) تشخیص می‌دهد، نه با پرس‌وجوی دوره‌ای، و علامت‌های مسیریابی را بدون انتظار برای timeout دوباره اعمال می‌کند.
+- **پشتیبانی از روت‌های مختلف:** روی Magisk، KernelSU و APatch کار می‌کند.
+
+---
+
+## روت ندارید؟
 
 > [!IMPORTANT]
-> This is a system **module** (for Magisk / KernelSU / APatch), **NOT** a standalone application!
+> این یک **ماژول سیستمی** است (برای Magisk / KernelSU / APatch) و یک برنامهٔ مستقل **نیست**!
 
-If your device is not rooted, or if you are looking for a regular GUI application with a visual interface for Android, Windows, macOS, or iOS, please find the official and community-supported clients here:
-👉 **[Xray-core GUI Clients](https://github.com/xtls/xray-core#gui-clients)**
-
----
-
-## Key Features
-
-- **Category Organizing:** Group your proxy servers into custom folders or categories.
-- **Smart Link Import:** Easily paste subscription URLs, raw configuration strings, or mixed text codes.
-- **One-Click Auto-Reload:** Saves your subscription links so you can update an entire category with a single tap.
-- **No Battery Drain:** Native background processing ensures your battery lasts much longer compared to running heavy standalone VPN apps.
-- **Native Hotspot Tethering:** Share your secured and bypassed proxy connection to laptops, consoles, or other phones via Wi-Fi Hotspot with full IPv4 and IPv6 routing support.
-
-
-**Note:** Magisk users need to install [KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone/releases/tag/v1.0) to open WebUI of the module
+اگر گوشی‌تان روت نیست، یا برنامهٔ گرافیکی معمولی برای اندروید، ویندوز، macOS یا iOS می‌خواهید، کلاینت‌های رسمی و پشتیبانی‌شدهٔ جامعه را اینجا ببینید:
+👉 **[کلاینت‌های گرافیکی Xray-core](https://github.com/xtls/xray-core#gui-clients)**
 
 ---
 
-## Acknowledgments & Credits
+## امکانات اصلی
 
-This project uses pre-built binaries from the following open-source projects:
-* **[Xray-core](https://github.com/XTLS/Xray-core):** The underlying engine that handles next-generation proxy protocols.
-* **[hev-socks5-tunnel](https://github.com/heiher/hev-socks5-tunnel):** A high-performance utility used to wrap proxy channels into a virtual network interface.
-* **[curl-android](https://github.com/vvb2060/curl-android):** curl tool and libcurl static library prefab for android
+- **دسته‌بندی پیکربندی‌ها:** سرورهای پروکسی را در پوشه‌ها یا دسته‌های دلخواه گروه‌بندی کنید.
+- **درون‌ریزی هوشمند لینک:** لینک اشتراک، رشته‌های پیکربندی خام یا متن ترکیبی را به‌راحتی بچسبانید.
+- **به‌روزرسانی خودکار با یک تَپ:** لینک‌های اشتراک ذخیره می‌شوند تا کل یک دسته را با یک تَپ به‌روز کنید.
+- **مصرف کم باتری:** پردازش بومی در پس‌زمینه باعث می‌شود باتری خیلی بیشتر از اجرای برنامه‌های VPN سنگین دوام بیاورد.
+- **اشتراک اینترنت از طریق هات‌اسپات:** اتصال امن و پروکسی‌شدهٔ خود را از طریق Wi-Fi هات‌اسپات با لپ‌تاپ، کنسول یا گوشی‌های دیگر به اشتراک بگذارید، با پشتیبانی کامل از مسیریابی IPv4 و IPv6.
 
-## License
+**توجه:** کاربران Magisk برای باز کردن WebUI ماژول باید [KsuWebUIStandalone](https://github.com/5ec1cff/KsuWebUIStandalone/releases/tag/v1.0) را نصب کنند.
 
-This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. 
+---
 
-By using this project, you agree to the terms and conditions set forth in the license. For more details, please refer to the [LICENSE](LICENSE) file in this repository.
+## قدردانی و منابع
 
-Essentially, you are free to use, modify, and distribute this software, provided that you include the same license and source code availability in your own project.
+این پروژه از فایل‌های باینری آماده‌شدهٔ پروژه‌های متن‌باز زیر استفاده می‌کند:
+* **[Xray-core](https://github.com/XTLS/Xray-core):** موتور اصلی که پروتکل‌های نسل بعدی پروکسی را مدیریت می‌کند.
+* **[openxtun](https://github.com/vincentng295/openxtun):** پوستهٔ کوچکی که یک دستگاه TUN لینوکس را باز می‌کند و فایل‌دیسکریپتور آن را به Xray می‌دهد.
+* **[curl-android](https://github.com/vvb2060/curl-android):** ابزار curl و کتابخانهٔ static libcurl برای اندروید.
+
+## مجوز
+
+این پروژه تحت مجوز **GNU General Public License v3.0 (GPL-3.0)** منتشر شده است.
+
+با استفاده از این پروژه، شرایط و مقررات مندرج در مجوز را می‌پذیرید. برای جزئیات بیشتر به فایل [LICENSE](LICENSE) در همین مخزن مراجعه کنید.
+
+به‌طور خلاصه، شما آزادید این نرم‌افزار را استفاده، تغییر و توزیع کنید، به شرط اینکه همان مجوز و دسترسی به سورس‌کد را در پروژهٔ خودتان هم نگه دارید.
