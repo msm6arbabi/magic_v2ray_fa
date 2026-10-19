@@ -12,19 +12,17 @@
             <div class="header-top-row">
                 <div style="min-width: 0; flex: 1;">
                     <h1>Magic V2Ray</h1>
-                    <div class="status-badge" id="service-status" role="button" tabindex="0"
-                         onclick="showCurrentIp()"
-                         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showCurrentIp();}">Status: Checking...</div>
-                    <div class="status-ip" id="status-ip" hidden></div>
                 </div>
                 <div class="header-actions">
                 <div class="lang-switcher">
                     <select id="lang-select" onchange="changeLanguage(this.value)" style="padding: 4px 8px; border-radius: 4px; background: var(--bg-panel, #222); color: var(--text-main, #fff); border: 1px solid #444;">
+                        <option value="auto" data-i18n="lang_auto">Auto (system)</option>
                         <option value="en">English</option>
                         <option value="vi">Tiếng Việt</option>
                         <option value="zh">简体中文</option>
                         <option value="zh-tw">繁體中文</option>
-                    <option value="fa">فارسی</option>
+                        <option value="ru">Русский</option>
+                        <option value="fa">فارسی</option>
                     </select>
                 </div>
                 <div class="tab-menu">
@@ -46,6 +44,14 @@
                     </div>
                 </div>
                 </div>
+            </div>
+            <div class="header-top-row">
+              <div style="flex: 1; min-width: 0;">
+                <div class="status-badge" id="service-status" role="button" tabindex="0"
+                        onclick="showCurrentIp()"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showCurrentIp();}">Status: Checking...</div>
+                <div class="status-ip" id="status-ip" hidden></div>
+              </div>
             </div>
             <section class="control-actions header-control-actions">
                 <button class="btn btn-start" onclick="toggleService('start')" data-i18n="btn_start">Start Engine</button>
@@ -403,6 +409,7 @@
                             <div class="category-dropdown-menu">
                                 <button onclick="openImportRoutingModal(); closeAllMenus();" data-i18n="menu_import_presets">Import presets from JSON</button>
                                 <button onclick="exportRoutingRulesToClipboard(); closeAllMenus();" data-i18n="menu_export_presets">Export presets JSON to clipboard</button>
+                                <button onclick="resetRoutingRulesToDefault(); closeAllMenus();" data-i18n="menu_reset_rules">Reset to default rules</button>
                             </div>
                         </div>
                     </div>
