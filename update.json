@@ -1,6 +1,6 @@
 {
-  "version": "v1.25-farsi",
-  "versionCode": 169,
-  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.25-farsi/MagicV2Ray_FA_v1.25-farsi-arm64.zip",
-  "changelog": "نسخهٔ فارسی v1.25 (ARM64) - بر پایهٔ آپاستریم v1.25 | Xray-core v26.10.10 | بازنشانی قوانین مسیریابی، زبان خودکار، زبان روسی"
+  "version": "v1.25.1-farsi",
+  "versionCode": 170,
+  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.25.1-farsi/MagicV2Ray_FA_v1.25.1-farsi-arm64.zip",
+  "changelog": "نسخهٔ فارسی v1.25.1 (ARM64) - آپدیت امنیتی: Xray-core v26.10.21 (حذف ۳ گواهی ریشهٔ مشکل‌دار، کامپایل با Go 1.27.3)"
 }
