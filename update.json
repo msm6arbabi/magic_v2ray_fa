@@ -1,6 +1,6 @@
 {
-  "version": "v1.25.1-farsi",
-  "versionCode": 170,
-  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.25.1-farsi/MagicV2Ray_FA_v1.25.1-farsi-arm64.zip",
-  "changelog": "نسخهٔ فارسی v1.25.1 (ARM64) - آپدیت امنیتی: Xray-core v26.10.21 (حذف ۳ گواهی ریشهٔ مشکل‌دار، کامپایل با Go 1.27.3)"
+  "version": "v1.27-farsi",
+  "versionCode": 172,
+  "zipUrl": "https://github.com/msm6arbabi/magic_v2ray_fa/releases/download/v1.27-farsi/MagicV2Ray_FA_v1.27-farsi-arm64.zip",
+  "changelog": "نسخهٔ فارسی v1.27 (ARM64) - Xray-core v26.10.29 | انتخاب اینترفیس خروجی، گروه‌های سیاست، MASQUE، جابجایی نود بین دسته‌ها"
 }
